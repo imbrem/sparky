@@ -84,92 +84,6 @@ def Pom.finite_pred {L} (α: Pom L) (p: α.carrier): Prop
 def Pom.infinite_pred {L} (α: Pom L) (p: α.carrier): Prop
   := Infinite (α.pred p)
 
-class Ticked (L: Type) :=
-  δ: L
-
-structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
-  left_split: Pom L
-  right_split: Pom L
-  left_iso: PomIso α left_split
-  right_iso: PomIso β right_split
-  shared: Type
-  left_removed: Type
-  right_removed: Type
-  left_carrier: left_split.carrier = (shared ⊕ left_removed)
-  right_carrier: right_split.carrier = (shared ⊕ right_removed)
-  left_removed_infinite_or_delta:
-    ∀p: left_removed, 
-      let p := left_carrier.symm ▸ (Sum.inr p);
-      left_split.action p = Ticked.δ ∨ left_split.infinite_pred p 
-  right_removed_infinite_or_delta:
-    ∀p: right_removed, 
-      let p := right_carrier.symm ▸ (Sum.inr p);
-      right_split.action p = Ticked.δ ∨ right_split.infinite_pred p
-  left_infinite: Infinite α.carrier -> Infinite shared
-  right_infinite: Infinite β.carrier -> Infinite shared
-  left_nonempty: Nonempty α.carrier -> Nonempty shared
-  right_nonempty: Nonempty β.carrier -> Nonempty shared
-  shared_infinite_preserved:
-    ∀p: shared,
-      left_split.infinite_pred (left_carrier ▸ (Sum.inl p)) <->
-      right_split.infinite_pred (right_carrier ▸ (Sum.inl p))
-  shared_order_preserved:
-    ∀l r: shared,
-      left_split.order.le 
-        (left_carrier ▸ (Sum.inl l)) 
-        (left_carrier ▸ (Sum.inl r))
-      <-> right_split.order.le
-        (right_carrier ▸ (Sum.inl l))
-        (right_carrier ▸ (Sum.inl r))
-  shared_action_preserved:
-    ∀p: shared,
-      left_split.action (left_carrier ▸ (Sum.inl p)) =
-      right_split.action (right_carrier ▸ (Sum.inl p))
-
-theorem PomEquiv.left_infinite_iff {L} [Ticked L] {α β: Pom L}
-  (E: PomEquiv α β): Infinite α.carrier <-> Infinite E.shared
-  := Iff.intro 
-    E.left_infinite 
-    (λI => by {
-      rw [E.left_iso.infinite_iff, E.left_carrier]
-      apply Sum.infinite_of_left
-    })
-
-theorem PomEquiv.right_infinite_iff {L} [Ticked L] {α β: Pom L}
-  (E: PomEquiv α β): Infinite β.carrier <-> Infinite E.shared
-  := Iff.intro 
-    E.right_infinite     
-    (λI => by {
-      rw [E.right_iso.infinite_iff, E.right_carrier]
-      apply Sum.infinite_of_left
-    })
-
-theorem PomEquiv.left_right_infinite_iff {L} [Ticked L] {α β: Pom L}
-  (E: PomEquiv α β): Infinite α.carrier <-> Infinite β.carrier
-  := by rw [left_infinite_iff E, right_infinite_iff E]
-
-theorem PomEquiv.left_nonempty_iff {L} [Ticked L] {α β: Pom L}
-  (E: PomEquiv α β): Nonempty α.carrier <-> Nonempty E.shared
-  := Iff.intro 
-    E.left_nonempty 
-    (λI => by {
-      rw [Equiv.nonempty_congr E.left_iso.toEquiv, E.left_carrier]
-      simp [I]
-    })
-
-theorem PomEquiv.right_nonempty_iff {L} [Ticked L] {α β: Pom L}
-  (E: PomEquiv α β): Nonempty β.carrier <-> Nonempty E.shared
-  := Iff.intro 
-    E.right_nonempty
-    (λI => by {
-      rw [Equiv.nonempty_congr E.right_iso.toEquiv, E.right_carrier]
-      simp [I]
-    })
-
-theorem PomEquiv.left_right_nonempty_iff {L} [Ticked L] {α β: Pom L}
-  (E: PomEquiv α β): Nonempty α.carrier <-> Nonempty β.carrier
-  := by rw [left_nonempty_iff E, right_nonempty_iff E]
-
 def SubPom {L} (P: Pom L): Type := P.carrier -> Prop
 
 def SubPom.full {L} (P: Pom L): SubPom P := λ_ => True
@@ -194,3 +108,91 @@ def SubPom.toPom {L} {P: Pom L} (S: SubPom P): Pom L := {
   order := @Subtype.partialOrder _ P.order S,
   action := λe => P.action e.val --TODO: use builtin?
 }
+
+class Ticked (L: Type) :=
+  δ: L
+
+structure PomReduces {L} [Ticked L] (α: Pom L) (ρ: SubPom α): Prop :=
+  infinite_or_tick: ∀p: α.carrier, 
+    ρ p ∨ 
+    α.infinite_pred p ∨ 
+    α.action p = Ticked.δ
+  infinite_preserved: ∀p: ρ.toPom.carrier,
+    α.infinite_pred p.val -> ρ.toPom.infinite_pred p
+  infinite_shared:
+    Infinite α.carrier -> Infinite ρ.toPom.carrier
+  empty_shared:
+    IsEmpty ρ.toPom.carrier -> IsEmpty α.carrier
+
+theorem PomReduces.refl {L} [Ticked L] (α: Pom L):
+  PomReduces α (SubPom.full α)
+  := {
+    infinite_or_tick := λp => Or.inl True.intro,
+    infinite_preserved := λp => sorry,
+    infinite_shared := λH => sorry,
+    empty_shared := λH => sorry,
+  }
+
+theorem PomReduces.empty {L} [Ticked L] {α: Pom L}
+  (P: PomReduces α (SubPom.empty α))
+  : IsEmpty α.carrier
+  := sorry
+
+theorem PomReduces.intersection {L} [Ticked L] 
+  (α: Pom L)
+  (ρ σ: SubPom α)
+  : 
+  PomReduces α ρ 
+  -> PomReduces α σ 
+  -> PomReduces α (ρ.intersection σ)
+  := sorry 
+
+theorem PomReduces.union {L} [Ticked L]
+  (α: Pom L)
+  (ρ σ: SubPom α)
+  : 
+  PomReduces α ρ 
+  -> PomReduces α σ 
+  -> PomReduces α (ρ.union σ)
+  := sorry 
+
+structure PomReduct {L} [Ticked L] (α: Pom L) :=
+  shared: SubPom α
+  is_reduct: PomReduces α shared
+
+def PomReduces.toReduct {L} [Ticked L] {α: Pom L} {ρ} 
+  (P: PomReduces α ρ):
+  PomReduct α
+  := {
+    shared := ρ,
+    is_reduct := P
+  }
+
+def PomReduct.refl {L} [Ticked L] (α: Pom L):
+  PomReduct α
+  := (PomReduces.refl α).toReduct
+
+structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
+  reduce_left: PomReduct α
+  reduce_right: PomReduct β
+  iso: PomIso reduce_left.shared.toPom reduce_right.shared.toPom
+
+theorem PomEquiv.refl {L} [Ticked L] (α: Pom L):
+  PomEquiv α α := {
+    reduce_left := PomReduct.refl α,
+    reduce_right := PomReduct.refl α,
+    iso := PomIso.refl _
+  }
+
+theorem PomEquiv.symm {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
+  : PomEquiv β α := {
+    reduce_left := P.reduce_right,
+    reduce_right := P.reduce_left,
+    iso := P.iso.symm 
+  }
+
+theorem PomEquiv.trans {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β)
+  (Q: PomEquiv β γ)
+  : PomEquiv α γ
+  := sorry
