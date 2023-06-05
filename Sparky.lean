@@ -69,72 +69,189 @@ def Pom.seq {L} (α β: Pom L): Pom L := {
   action := Sum.elim α.action β.action
 }
 
+def PomIso.seq {L} {α β α' β': Pom L} 
+  (Iα: PomIso α α') (Iβ: PomIso β β')
+  : PomIso (α.seq β) (α'.seq β')
+  := {
+    toRelIso := RelIso.sumLexCongr Iα.toRelIso Iβ.toRelIso,
+    action_eq := λe => 
+      by 
+        cases e <;> 
+        simp [
+          Pom.seq, Equiv.sumCongr, RelIso.sumLexCongr, 
+          Iα.action_eq, Iβ.action_eq
+        ]
+  }
+
+def Pom.par_order {L} (α β: Pom L)
+  : PartialOrder (α.carrier ⊕ β.carrier)
+  := @Sum.instPartialOrderSum _ _ α.order β.order
+
+def Pom.par_order_lr {L} {α β: Pom L}
+  {a: α.carrier} {b: β.carrier}
+  : ¬((α.par_order β).le (Sum.inl a) (Sum.inr b))
+  := by simp [LE.le, par_order]
+
+
+def Pom.par_order_rl {L} {α β: Pom L}
+  {a: α.carrier} {b: β.carrier}
+  : ¬((α.par_order β).le (Sum.inr b) (Sum.inl a))
+  := by simp [LE.le, par_order]
+
 def Pom.par {L} (α β: Pom L): Pom L := {
   carrier := α.carrier ⊕ β.carrier,
-  order := @Sum.instPartialOrderSum _ _ α.order β.order,
+  order := α.par_order β,
   action := Sum.elim α.action β.action
 }
 
-def Pom.pred {L} (α: Pom L) (p: α.carrier): Type
-  := {q: α.carrier // α.order.le q p}
+def PomIso.par {L} {α β α' β': Pom L} 
+  (Iα: PomIso α α') (Iβ: PomIso β β')
+  : PomIso (α.par β) (α'.par β')
+  := {
+    toEquiv := Equiv.sumCongr Iα.toEquiv Iβ.toEquiv,
+    map_rel_iff' := λ{a b} => by
+      cases a with
+      | inl a => 
+        cases b with
+        | inl b => sorry
+        | inr _ => simp [Pom.par_order_lr, Pom.par]
+      | inr a => 
+        cases b with
+        | inl _ => simp [Pom.par_order_rl, Pom.par]
+        | inr b => sorry 
+    action_eq := λe => by 
+      cases e <;> 
+      simp [Pom.par, Equiv.sumCongr, Iα.action_eq, Iβ.action_eq]
+  }
 
-def Pom.finite_pred {L} (α: Pom L) (p: α.carrier): Prop
-  := Finite (α.pred p)
+structure SubPom {L} (P: Pom L): Type := 
+  contains: Set P.carrier
 
-def Pom.infinite_pred {L} (α: Pom L) (p: α.carrier): Prop
-  := Infinite (α.pred p)
+def SubPom.full {L} (P: Pom L): SubPom P := ⟨ λ_ => True ⟩
+def SubPom.empty {L} (P: Pom L): SubPom P := ⟨ λ_ => False ⟩ 
+def SubPom.union {L} {P: Pom L} (A B: SubPom P): SubPom P := 
+   ⟨ λe => A.contains e ∨ B.contains e ⟩
+def SubPom.intersection {L} {P: Pom L} (A B: SubPom P): SubPom P 
+  := ⟨ λe => A.contains e ∧ B.contains e ⟩ 
+def SubPom.complement {L} {P: Pom L} (A: SubPom P): SubPom P 
+  := ⟨ λe => ¬(A.contains e) ⟩
+def SubPom.deletion {L} {P: Pom L} (A R: SubPom P): SubPom P
+  := ⟨ λe => A.contains e ∧ ¬(R.contains e) ⟩  
 
-def SubPom {L} (P: Pom L): Type := P.carrier -> Prop
+def SubPom.intersection_comm {L} {P: Pom L} (A B: SubPom P)
+  : A.intersection B = B.intersection A
+  := by simp [intersection, and_comm]
 
-def SubPom.full {L} (P: Pom L): SubPom P := λ_ => True
-def SubPom.empty {L} (P: Pom L): SubPom P := λ_ => False
-def SubPom.union {L} {P: Pom L} (A B: SubPom P) := λe => A e ∨ B e
-def SubPom.intersection {L} {P: Pom L} (A B: SubPom P) := λe => A e ∧ B e
-def SubPom.complement {L} {P: Pom L} (A: SubPom P) := λe => ¬(A e)
-def SubPom.deletion {L} {P: Pom L} (A R: SubPom P) := λe => A e ∧ ¬(R e)  
+def SubPom.union_comm {L} {P: Pom L} (A B: SubPom P)
+  : A.union B = B.union A
+  := by simp [union, or_comm]
 
-def SubPom.sigma {L} {N: Type} [PartialOrder N] {F: N -> Pom L} (SF: (n: N) -> SubPom (F n))
+def SubPom.intersection_full {L} {P: Pom L} (A: SubPom P)
+  : A.intersection (full P) = A
+  := by simp [intersection, full]
+
+def SubPom.full_intersection {L} {P: Pom L} (A: SubPom P)
+  : (full P).intersection A = A
+  := by simp [intersection, full]
+
+def SubPom.sigma {L} {N: Type} [PartialOrder N] 
+  {F: N -> Pom L} (SF: (n: N) -> SubPom (F n))
   : SubPom (Pom.sigma F)
-  := λ⟨n, e⟩ => SF n e
+  := ⟨ λ⟨n, e⟩ => (SF n).contains e ⟩
 
-def SubPom.seq {L} {A B: Pom L} (SA: SubPom A) (SB: SubPom B): SubPom (A.seq B)
-  := Sum.elim SA SB
+def SubPom.seq {L} {A B: Pom L} (SA: SubPom A) (SB: SubPom B)
+  : SubPom (A.seq B)
+  := ⟨ Sum.elim SA.contains SB.contains ⟩
 
-def SubPom.par {L} {A B: Pom L} (SA: SubPom A) (SB: SubPom B): SubPom (A.par B)
-  := Sum.elim SA SB
+def SubPom.par {L} {A B: Pom L} (SA: SubPom A) (SB: SubPom B)
+  : SubPom (A.par B)
+  := ⟨ Sum.elim SA.contains SB.contains ⟩
+
+def SubPom.carrier {L} {P: Pom L} (S: SubPom P): Type
+  := ↑S.contains
+
+def SubPom.order {L} {P: Pom L} (S: SubPom P): PartialOrder S.carrier
+  := @Subtype.partialOrder P.carrier P.order S.contains
+
+def SubPom.action {L} {P: Pom L} (S: SubPom P) (p: S.carrier): L
+  := P.action p.val
 
 def SubPom.toPom {L} {P: Pom L} (S: SubPom P): Pom L := {
-  carrier := { x: P.carrier // S x },
-  order := @Subtype.partialOrder _ P.order S,
-  action := λe => P.action e.val --TODO: use builtin?
+  carrier := S.carrier,
+  order := S.order,
+  action := S.action
 }
+
+def Pom.finite {L} (P: Pom L): Prop
+  := Finite P.carrier
+
+def Pom.infinite {L} (P: Pom L): Prop
+  := Infinite P.carrier
+
+def SubPom.finite {L} {P: Pom L} (S: SubPom P): Prop
+  := Finite S.carrier
+
+def SubPom.infinite {L} {P: Pom L} (S: SubPom P): Prop
+  := Infinite S.carrier
+
+def Pom.pred {L} (P: Pom L) (p: P.carrier): SubPom P
+  := ⟨ P.order.le p ⟩
+
+def SubPom.pred {L} {P: Pom L} (A: SubPom P) (p: A.carrier) 
+  := A.intersection (P.pred p.val)
+
+def SubPom.full_pred_pred_full {L} (P: Pom L) (p)
+  : (full P).pred p = P.pred p.val
+  := full_intersection (P.pred p.val)
+
+def Pom.finite_pred {L} (α: Pom L) (p: α.carrier): Prop
+  := (α.pred p).finite
+
+def Pom.infinite_pred {L} (α: Pom L) (p: α.carrier): Prop
+  := (α.pred p).infinite
+
+def SubPom.infinite_pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier)
+  : Prop
+  := (ρ.pred p).infinite
+
+theorem Pom.full_carrier_equiv {L} (α: Pom L)
+  : α.carrier ≃ (SubPom.full α).carrier
+  := ⟨
+    λa => ⟨a, True.intro⟩,
+    λ⟨a, True.intro⟩ => a,
+    λ_ => rfl,
+    λ⟨_, _⟩ => rfl
+  ⟩
 
 class Ticked (L: Type) :=
   δ: L
 
-structure PomReduces {L} [Ticked L] (α: Pom L) (ρ: SubPom α): Prop :=
+structure PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α): Prop :=
   infinite_or_tick: ∀p: α.carrier, 
-    ρ p ∨ 
+    ρ.contains p ∨ 
     α.infinite_pred p ∨ 
     α.action p = Ticked.δ
   infinite_preserved: ∀p: ρ.toPom.carrier,
-    α.infinite_pred p.val -> ρ.toPom.infinite_pred p
+    α.infinite_pred p.val -> ρ.infinite_pred p
   infinite_shared:
-    Infinite α.carrier -> Infinite ρ.toPom.carrier
+    α.infinite -> ρ.infinite
   empty_shared:
-    IsEmpty ρ.toPom.carrier -> IsEmpty α.carrier
+    IsEmpty ρ.carrier -> IsEmpty α.carrier
 
 theorem PomReduces.refl {L} [Ticked L] (α: Pom L):
-  PomReduces α (SubPom.full α)
+  PomReduces (SubPom.full α)
   := {
     infinite_or_tick := λp => Or.inl True.intro,
-    infinite_preserved := λp => sorry,
-    infinite_shared := λH => sorry,
-    empty_shared := λH => sorry,
+    infinite_preserved := λp H => by 
+      rw [SubPom.infinite_pred, SubPom.full_pred_pred_full]
+      exact H
+    infinite_shared := λH => 
+      α.full_carrier_equiv.infinite_iff.mp H,
+    empty_shared := λH => IsEmpty.mk (λe => H.false ⟨e, True.intro⟩),
   }
 
 theorem PomReduces.empty {L} [Ticked L] {α: Pom L}
-  (P: PomReduces α (SubPom.empty α))
+  (P: PomReduces (SubPom.empty α))
   : IsEmpty α.carrier
   := sorry
 
@@ -142,26 +259,26 @@ theorem PomReduces.intersection {L} [Ticked L]
   (α: Pom L)
   (ρ σ: SubPom α)
   : 
-  PomReduces α ρ 
-  -> PomReduces α σ 
-  -> PomReduces α (ρ.intersection σ)
+  PomReduces ρ 
+  -> PomReduces σ 
+  -> PomReduces (ρ.intersection σ)
   := sorry 
 
 theorem PomReduces.union {L} [Ticked L]
   (α: Pom L)
   (ρ σ: SubPom α)
   : 
-  PomReduces α ρ 
-  -> PomReduces α σ 
-  -> PomReduces α (ρ.union σ)
+  PomReduces ρ 
+  -> PomReduces σ 
+  -> PomReduces (ρ.union σ)
   := sorry 
 
 structure PomReduct {L} [Ticked L] (α: Pom L) :=
   shared: SubPom α
-  is_reduct: PomReduces α shared
+  is_reduct: PomReduces shared
 
-def PomReduces.toReduct {L} [Ticked L] {α: Pom L} {ρ} 
-  (P: PomReduces α ρ):
+def PomReduces.toReduct {L} [Ticked L] {α: Pom L} {ρ: SubPom α} 
+  (P: PomReduces ρ):
   PomReduct α
   := {
     shared := ρ,
