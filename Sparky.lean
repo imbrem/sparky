@@ -6,6 +6,7 @@ import Mathlib.Data.Sum.Order
 import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Fintype.Card
 import Mathlib.Logic.Equiv.Defs
+import Mathlib.Data.Set.Finite
 
 open Classical
 
@@ -137,32 +138,40 @@ def PomIso.par {L} {α β α' β': Pom L}
 structure SubPom {L} (P: Pom L): Type := 
   contains: Set P.carrier
 
-def SubPom.full {L} (P: Pom L): SubPom P := ⟨ λ_ => True ⟩
-def SubPom.empty {L} (P: Pom L): SubPom P := ⟨ λ_ => False ⟩ 
-def SubPom.union {L} {P: Pom L} (A B: SubPom P): SubPom P := 
-   ⟨ λe => A.contains e ∨ B.contains e ⟩
-def SubPom.intersection {L} {P: Pom L} (A B: SubPom P): SubPom P 
-  := ⟨ λe => A.contains e ∧ B.contains e ⟩ 
-def SubPom.complement {L} {P: Pom L} (A: SubPom P): SubPom P 
-  := ⟨ λe => ¬(A.contains e) ⟩
-def SubPom.deletion {L} {P: Pom L} (A R: SubPom P): SubPom P
-  := ⟨ λe => A.contains e ∧ ¬(R.contains e) ⟩  
+def SubPom.univ {L} (α: Pom L): SubPom α := ⟨ Set.univ ⟩
+def SubPom.empty {L} (α: Pom L): SubPom α := ⟨ ∅ ⟩ 
+def SubPom.union {L} {α: Pom L} (ρ σ: SubPom α): SubPom α := 
+   ⟨ ρ.contains ∪ σ.contains ⟩
+def SubPom.inter {L} {α: Pom L} (ρ σ: SubPom α): SubPom α
+  := ⟨ ρ.contains ∩ σ.contains ⟩ 
+def SubPom.complement {L} {α: Pom L} (ρ: SubPom α): SubPom α 
+  := ⟨ ρ.containsᶜ ⟩
+def SubPom.deletion {L} {α: Pom L} (ρ σ: SubPom α): SubPom α
+  := ⟨ ρ.contains ∩ σ.containsᶜ ⟩  
 
-def SubPom.intersection_comm {L} {P: Pom L} (A B: SubPom P)
-  : A.intersection B = B.intersection A
-  := by simp [intersection, and_comm]
+def SubPom.inter_comm {L} {α: Pom L} (ρ σ: SubPom α)
+  : ρ.inter σ = σ.inter ρ
+  := by simp [inter, Set.inter_comm]
 
-def SubPom.union_comm {L} {P: Pom L} (A B: SubPom P)
-  : A.union B = B.union A
-  := by simp [union, or_comm]
+def SubPom.inter_assoc {L} {α: Pom L} (ρ σ τ: SubPom α)
+  : (ρ.inter σ).inter τ = ρ.inter (σ.inter τ)
+  := by simp [inter, Set.inter_assoc]
 
-def SubPom.intersection_full {L} {P: Pom L} (A: SubPom P)
-  : A.intersection (full P) = A
-  := by simp [intersection, full]
+def SubPom.union_comm {L} {α: Pom L} (ρ σ: SubPom α)
+  : ρ.union σ = σ.union ρ
+  := by simp [union, Set.union_comm]
 
-def SubPom.full_intersection {L} {P: Pom L} (A: SubPom P)
-  : (full P).intersection A = A
-  := by simp [intersection, full]
+def SubPom.inter_univ {L} {α: Pom L} (ρ: SubPom α)
+  : ρ.inter (univ α) = ρ
+  := by simp [inter, univ]
+
+def SubPom.univ_inter {L} {α: Pom L} (ρ: SubPom α)
+  : (univ α).inter ρ = ρ
+  := by simp [inter, univ]
+
+def SubPom.inter_self {L} {α: Pom L} (ρ: SubPom α)
+  : ρ.inter ρ = ρ
+  := by simp [inter]
 
 def SubPom.sigma {L} {N: Type} [PartialOrder N] 
   {F: N -> Pom L} (SF: (n: N) -> SubPom (F n))
@@ -206,18 +215,28 @@ instance {L} {α: Pom L}: CoeOut (SubPom α) (Type) := {
   coe := SubPom.carrier
 }
 
-def Pom.pred {L} (P: Pom L) (p: P.carrier): SubPom P
-  := ⟨ P.order.le p ⟩
+def Pom.pred {L} (α: Pom L) (p: α.carrier): SubPom α
+  := ⟨ α.order.le p ⟩
+def Pom.truncation {L} (α: Pom L): SubPom α
+  := ⟨ λe => Finite (α.pred e) ⟩
+def Pom.never {L} (α: Pom L): SubPom α
+  := ⟨ λe => Infinite (α.pred e) ⟩
 
-def SubPom.pred {L} {P: Pom L} (A: SubPom P) (p: A.carrier) 
-  := A.intersection (P.pred p.val)
+def SubPom.pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier) 
+  := ρ.inter (α.pred p.val)
+def SubPom.truncation {L} {α: Pom L} (ρ: SubPom α)
+  := ρ.inter α.truncation
+def SubPom.never {L} {α: Pom L} (ρ: SubPom α)
+  := ρ.inter α.never
+def SubPom.t_inter {L} {α: Pom L} (ρ σ: SubPom α)
+  := (ρ.inter σ).truncation
 
-def SubPom.full_pred_pred_full {L} (P: Pom L) (p)
-  : (full P).pred p = P.pred p.val
-  := full_intersection (P.pred p.val)
+def SubPom.univ_pred_pred_univ {L} (α: Pom L) (p)
+  : (univ α).pred p = α.pred p.val
+  := univ_inter (α.pred p.val)
 
-theorem Pom.full_carrier_equiv {L} (α: Pom L)
-  : α.carrier ≃ (SubPom.full α).carrier
+theorem Pom.univ_carrier_equiv {L} (α: Pom L)
+  : α.carrier ≃ (SubPom.univ α).carrier
   := ⟨
     λa => ⟨a, True.intro⟩,
     λ⟨a, True.intro⟩ => a,
@@ -239,7 +258,7 @@ structure SubPomReduces {L} [Ticked L] {α: Pom L} (ρ σ: SubPom α): Prop :=
   infinite_shared: Infinite ρ -> Infinite σ
   empty_shared: IsEmpty ρ -> IsEmpty σ  
 
-def PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α) := SubPomReduces (SubPom.full α) ρ
+def PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α) := SubPomReduces (SubPom.univ α) ρ
 
 theorem SubPomReduces.refl {L} [Ticked L] {α: Pom L} (ρ: SubPom α):
   SubPomReduces ρ ρ
@@ -251,8 +270,8 @@ theorem SubPomReduces.refl {L} [Ticked L] {α: Pom L} (ρ: SubPom α):
     empty_shared := λH => H,
   }
 
-theorem PomReduces.refl {L} [Ticked L] (α: Pom L): PomReduces (SubPom.full α)
-  := SubPomReduces.refl (SubPom.full α)
+theorem PomReduces.refl {L} [Ticked L] (α: Pom L): PomReduces (SubPom.univ α)
+  := SubPomReduces.refl (SubPom.univ α)
 
 theorem SubPomReduces.trans {L} [Ticked L] {α: Pom L} {ρ σ τ: SubPom α}
   (Hρσ: SubPomReduces ρ σ) (Hστ: SubPomReduces σ τ)
@@ -283,6 +302,37 @@ theorem SubPomReduces.antisymm {L} [Ticked L]
   (H: SubPomReduces ρ σ) (H': SubPomReduces σ ρ)
   : ρ = σ
   := SubPom.contains_eq (subset_antisymm H'.subset H.subset)
+
+-- theorem SubPomReduces.inter {L} [Ticked L]
+--   {α: Pom L} {ρ σ τ: SubPom α}
+--   (Hσ: SubPomReduces ρ σ) (Hτ: SubPomReduces ρ τ)
+--   : SubPomReduces ρ (σ.t_inter τ)
+--   := {
+--     subset := by {
+--       apply subset_trans
+--       apply subset_trans
+--       apply Set.inter_subset_left
+--       apply Set.inter_subset_inter Hσ.subset Hτ.subset
+--       rw [Set.inter_self]
+--     },
+--     infinite_or_tick := λe => 
+--       match Hσ.infinite_or_tick e with
+--       | Or.inl H => match Hτ.infinite_or_tick e with
+--         | Or.inl H' => 
+--           match finite_or_infinite (ρ.pred e) with
+--           | Or.inl F =>   
+--             Or.inl (
+--               Set.mem_inter (Set.mem_inter H H') 
+--               F
+--             )
+--           | Or.inr I => Or.inr (Or.inl I)
+--         | Or.inr H' => Or.inr H'
+--       | Or.inr H => Or.inr H,
+--     infinite_preserved := λe H =>
+--       sorry,
+--     infinite_shared := sorry,
+--     empty_shared := sorry
+--   }
 
 def SubPom.flatten {L} {α: Pom L} {ρ: SubPom α} 
   (σ: SubPom ρ.toPom)
