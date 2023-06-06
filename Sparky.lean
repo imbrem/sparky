@@ -259,7 +259,12 @@ theorem SubPomReduces.trans {L} [Ticked L] {α: Pom L} {ρ σ τ: SubPom α}
       | Or.inl H => 
         match Hστ.infinite_or_tick ⟨e.val, H⟩ with
         | Or.inl H => Or.inl H
-        | Or.inr (Or.inl I) => Or.inr (Or.inl sorry)
+        | Or.inr (Or.inl I) => Or.inr (Or.inl (
+          @Infinite.of_injective
+          _ _ I
+          (λ⟨e, ⟨Hc, Hp⟩ ⟩  => ⟨e, ⟨Hρσ.subset Hc, Hp⟩⟩)
+          (λ⟨_, ⟨_, _⟩⟩ ⟨_, ⟨_, _⟩⟩ H => by cases H; rfl)
+        ))
         | Or.inr (Or.inr H) => Or.inr (Or.inr H)
       | Or.inr H => Or.inr H,
     infinite_preserved := λe => 
