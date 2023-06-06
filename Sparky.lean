@@ -87,15 +87,28 @@ def Pom.par_order {L} (α β: Pom L)
   : PartialOrder (α.carrier ⊕ β.carrier)
   := @Sum.instPartialOrderSum _ _ α.order β.order
 
+@[simp]
+def Pom.par_order_ll {L} {α β: Pom L}
+  {a: α.carrier} {b: α.carrier}
+  : ((α.par_order β).le (Sum.inl a) (Sum.inl b)) <-> α.order.le a b
+  := by simp [LE.le, par_order]
+
+@[simp]
 def Pom.par_order_lr {L} {α β: Pom L}
   {a: α.carrier} {b: β.carrier}
   : ¬((α.par_order β).le (Sum.inl a) (Sum.inr b))
   := by simp [LE.le, par_order]
 
-
+@[simp]
 def Pom.par_order_rl {L} {α β: Pom L}
   {a: α.carrier} {b: β.carrier}
   : ¬((α.par_order β).le (Sum.inr b) (Sum.inl a))
+  := by simp [LE.le, par_order]
+
+@[simp]
+def Pom.par_order_rr {L} {α β: Pom L}
+  {a: β.carrier} {b: β.carrier}
+  : ((α.par_order β).le (Sum.inr a) (Sum.inr b)) <-> β.order.le a b
   := by simp [LE.le, par_order]
 
 def Pom.par {L} (α β: Pom L): Pom L := {
@@ -110,15 +123,8 @@ def PomIso.par {L} {α β α' β': Pom L}
   := {
     toEquiv := Equiv.sumCongr Iα.toEquiv Iβ.toEquiv,
     map_rel_iff' := λ{a b} => by
-      cases a with
-      | inl a => 
-        cases b with
-        | inl b => sorry
-        | inr _ => simp [Pom.par_order_lr, Pom.par]
-      | inr a => 
-        cases b with
-        | inl _ => simp [Pom.par_order_rl, Pom.par]
-        | inr b => sorry 
+      cases a <;> cases b <;>
+      simp [Pom.par, Iα.map_rel_iff, Iβ.map_rel_iff]
     action_eq := λe => by 
       cases e <;> 
       simp [Pom.par, Equiv.sumCongr, Iα.action_eq, Iβ.action_eq]
