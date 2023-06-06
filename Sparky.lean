@@ -195,7 +195,6 @@ def SubPom.order {L} {P: Pom L} (S: SubPom P): PartialOrder S.carrier
 def SubPom.action {L} {P: Pom L} (S: SubPom P) (p: S.carrier): L
   := P.action p.val
 
---TODO: coerce SubPom to Pom
 def SubPom.toPom {L} {P: Pom L} (S: SubPom P): Pom L := {
   carrier := S.carrier,
   order := S.order,
@@ -217,19 +216,17 @@ instance {L} {α: Pom L}: CoeOut (SubPom α) (Type) := {
 
 def Pom.pred {L} (α: Pom L) (p: α.carrier): SubPom α
   := ⟨ α.order.le p ⟩
-def Pom.truncation {L} (α: Pom L): SubPom α
-  := ⟨ λe => Finite (α.pred e) ⟩
-def Pom.never {L} (α: Pom L): SubPom α
-  := ⟨ λe => Infinite (α.pred e) ⟩
 
 def SubPom.pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier) 
   := ρ.inter (α.pred p.val)
+def SubPom.happens {L} {α: Pom L} (ρ: SubPom α): SubPom α
+  := ⟨ λe => ∃p: ρ.contains e, Finite (ρ.pred ⟨e, p⟩) ⟩ 
+def SubPom.never {L} {α: Pom L} (ρ: SubPom α): SubPom α
+  := ⟨ λe => ∃p: ρ.contains e, Finite (ρ.pred ⟨e, p⟩) ⟩
 def SubPom.truncation {L} {α: Pom L} (ρ: SubPom α)
-  := ρ.inter α.truncation
-def SubPom.never {L} {α: Pom L} (ρ: SubPom α)
-  := ρ.inter α.never
+  := ρ.inter ρ.happens
 def SubPom.t_inter {L} {α: Pom L} (ρ σ: SubPom α)
-  := (ρ.inter σ).truncation
+  := ρ.truncation.inter σ.truncation
 
 def SubPom.univ_pred_pred_univ {L} (α: Pom L) (p)
   : (univ α).pred p = α.pred p.val
