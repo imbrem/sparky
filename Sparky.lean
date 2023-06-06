@@ -223,61 +223,55 @@ theorem Pom.full_carrier_equiv {L} (α: Pom L)
 class Ticked (L: Type) :=
   δ: L
 
-structure PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α): Prop :=
-  infinite_or_tick: ∀p: α.carrier, 
-    ρ.contains p ∨ 
-    Infinite (α.pred p) ∨ 
+structure SubPomReduces {L} [Ticked L] {α: Pom L} (ρ σ: SubPom α): Prop :=
+  subset: σ.contains ⊆ ρ.contains
+  infinite_or_tick: ∀p: ρ.contains,
+    σ.contains p ∨
+    Infinite (ρ.pred p) ∨
     α.action p = Ticked.δ
-  infinite_preserved: ∀p: ρ.toPom.carrier,
-    Infinite (α.pred p.val) -> Infinite (ρ.pred p)
-  infinite_shared:
-    Infinite α -> Infinite ρ
-  empty_shared:
-    IsEmpty ρ -> IsEmpty α
+  infinite_preserved: ∀p: σ.carrier,
+    Infinite (ρ.pred ⟨p.val, subset p.property⟩) -> Infinite (σ.pred p)
+  infinite_shared: Infinite ρ -> Infinite σ
+  empty_shared: IsEmpty ρ -> IsEmpty σ  
 
-theorem PomReduces.refl {L} [Ticked L] (α: Pom L):
-  PomReduces (SubPom.full α)
+def PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α) := SubPomReduces (SubPom.full α) ρ
+
+theorem SubPomReduces.refl {L} [Ticked L] {α: Pom L} (ρ: SubPom α):
+  SubPomReduces ρ ρ
   := {
-    infinite_or_tick := λ_ => Or.inl True.intro,
-    infinite_preserved := λ_ H => by 
-      rw [SubPom.full_pred_pred_full]
-      exact H
-    infinite_shared := λH => 
-      α.full_carrier_equiv.infinite_iff.mp H,
-    empty_shared := λH => IsEmpty.mk (λe => H.false ⟨e, True.intro⟩),
+    subset := subset_rfl,
+    infinite_or_tick := λ⟨_, H⟩ => Or.inl H,
+    infinite_preserved := λ_ H => H,
+    infinite_shared := λH => H,
+    empty_shared := λH => H,
   }
 
-theorem PomReduces.empty {L} [Ticked L] {α: Pom L}
-  (P: PomReduces (SubPom.empty α))
-  : IsEmpty α.carrier
-  := P.empty_shared ⟨λ⟨_, C⟩ => C⟩
+theorem PomReduces.refl {L} [Ticked L] (α: Pom L): PomReduces (SubPom.full α)
+  := SubPomReduces.refl (SubPom.full α)
+
+theorem SubPomReduces.trans {L} [Ticked L] {α: Pom L} {ρ σ τ: SubPom α}
+  (Hρσ: SubPomReduces ρ σ) (Hστ: SubPomReduces σ τ)
+  : SubPomReduces ρ τ
+  := {
+    subset := subset_trans Hστ.subset Hρσ.subset,
+    infinite_or_tick := λe => 
+      match Hρσ.infinite_or_tick e with
+      | Or.inl H => 
+        match Hστ.infinite_or_tick ⟨e.val, H⟩ with
+        | Or.inl H => Or.inl H
+        | Or.inr (Or.inl I) => Or.inr (Or.inl sorry)
+        | Or.inr (Or.inr H) => Or.inr (Or.inr H)
+      | Or.inr H => Or.inr H,
+    infinite_preserved := λe => 
+      Hστ.infinite_preserved e ∘ Hρσ.infinite_preserved ⟨e.val, Hστ.subset e.property⟩,
+    infinite_shared := Hστ.infinite_shared ∘ Hρσ.infinite_shared,
+    empty_shared := Hστ.empty_shared ∘ Hρσ.empty_shared,
+  }
 
 def SubPom.flatten {L} {α: Pom L} {ρ: SubPom α} 
   (σ: SubPom ρ.toPom)
   : SubPom α
   := ⟨λe => (p: ρ.contains e) -> σ.contains ⟨e, p⟩⟩
-
-theorem PomReduces.trans {L} [Ticked L] 
-  {α: Pom L} {ρ: SubPom α} {σ: SubPom ρ.toPom}
-  (P: PomReduces ρ) (S: PomReduces σ)
-  : PomReduces (SubPom.flatten σ) 
-  := {
-    infinite_or_tick := λe => by {
-      cases P.infinite_or_tick e
-      case inr => simp [*]
-      cases S.infinite_or_tick ⟨e, by assumption⟩ with
-      | inr H =>
-        cases H with
-        | inl H => 
-          apply Or.inr; apply Or.inl;
-          sorry
-        | inr H => exact Or.inr (Or.inr H)
-      | inl H => exact Or.inl (λ_ => H)
-    },
-    infinite_preserved := λe H => sorry,
-    infinite_shared := λH => sorry,
-    empty_shared := λH => sorry
-  }
 
 structure PomReduct {L} [Ticked L] (α: Pom L) :=
   shared: SubPom α
@@ -318,4 +312,8 @@ theorem PomEquiv.trans {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β)
   (Q: PomEquiv β γ)
   : PomEquiv α γ
-  := sorry
+  := {
+    reduce_left := sorry,
+    reduce_right := sorry,
+    iso := sorry
+  }
