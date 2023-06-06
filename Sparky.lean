@@ -193,6 +193,11 @@ def SubPom.toPom {L} {P: Pom L} (S: SubPom P): Pom L := {
   action := S.action
 }
 
+theorem SubPom.contains_eq {L} {α: Pom L} {ρ σ: SubPom α} 
+  (H: ρ.contains = σ.contains)
+  : ρ = σ
+  := by cases ρ; cases σ; cases H; rfl
+
 instance {L} {α: Pom L}: CoeOut (SubPom α) (Pom L) := {
   coe := SubPom.toPom
 }
@@ -272,6 +277,12 @@ theorem SubPomReduces.trans {L} [Ticked L] {α: Pom L} {ρ σ τ: SubPom α}
     infinite_shared := Hστ.infinite_shared ∘ Hρσ.infinite_shared,
     empty_shared := Hστ.empty_shared ∘ Hρσ.empty_shared,
   }
+
+theorem SubPomReduces.antisymm {L} [Ticked L] 
+  {α: Pom L} {ρ σ: SubPom α}
+  (H: SubPomReduces ρ σ) (H': SubPomReduces σ ρ)
+  : ρ = σ
+  := SubPom.contains_eq (subset_antisymm H'.subset H.subset)
 
 def SubPom.flatten {L} {α: Pom L} {ρ: SubPom α} 
   (σ: SubPom ρ.toPom)
