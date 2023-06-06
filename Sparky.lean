@@ -252,40 +252,32 @@ theorem PomReduces.empty {L} [Ticked L] {α: Pom L}
   : IsEmpty α.carrier
   := P.empty_shared ⟨λ⟨_, C⟩ => C⟩
 
-theorem PomReduces.intersection {L} [Ticked L] 
-  {α: Pom L} {ρ σ: SubPom α} (P: PomReduces ρ) (S: PomReduces σ) 
-  : PomReduces (ρ.intersection σ)
-  := {
-    infinite_or_tick := λe => by
-      cases P.infinite_or_tick e <;>
-      cases S.infinite_or_tick e <;>
-      simp [*, SubPom.intersection]
-    infinite_preserved := λe H => sorry,
-    infinite_shared := λH => sorry,
-    empty_shared := λH => sorry
-  }
-
-theorem PomReduces.union {L} [Ticked L]
-  {α: Pom L} {ρ σ: SubPom α} (P: PomReduces ρ) (S: PomReduces σ) 
-  : PomReduces (ρ.union σ)
-  := {
-    infinite_or_tick := λe => by
-      cases P.infinite_or_tick e <;>
-      cases S.infinite_or_tick e <;>
-      simp [*, SubPom.union]
-    infinite_preserved := λe H => sorry,
-    infinite_shared := λH => sorry,
-    empty_shared := λH => sorry
-  } 
-
 def SubPom.flatten {L} {α: Pom L} {ρ: SubPom α} 
   (σ: SubPom ρ.toPom)
   : SubPom α
   := ⟨λe => (p: ρ.contains e) -> σ.contains ⟨e, p⟩⟩
 
-theorem PomReduces.trans {L} [Ticked L] {α: Pom L} {ρ: SubPom α} {σ: SubPom ρ.toPom}
-  : PomReduces ρ -> PomReduces σ -> PomReduces (SubPom.flatten σ) 
-  := sorry
+theorem PomReduces.trans {L} [Ticked L] 
+  {α: Pom L} {ρ: SubPom α} {σ: SubPom ρ.toPom}
+  (P: PomReduces ρ) (S: PomReduces σ)
+  : PomReduces (SubPom.flatten σ) 
+  := {
+    infinite_or_tick := λe => by {
+      cases P.infinite_or_tick e
+      case inr => simp [*]
+      cases S.infinite_or_tick ⟨e, by assumption⟩ with
+      | inr H =>
+        cases H with
+        | inl H => 
+          apply Or.inr; apply Or.inl;
+          sorry
+        | inr H => exact Or.inr (Or.inr H)
+      | inl H => exact Or.inl (λ_ => H)
+    },
+    infinite_preserved := λe H => sorry,
+    infinite_shared := λH => sorry,
+    empty_shared := λH => sorry
+  }
 
 structure PomReduct {L} [Ticked L] (α: Pom L) :=
   shared: SubPom α
