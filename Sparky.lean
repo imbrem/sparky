@@ -14,6 +14,10 @@ structure Pom (L: Type) :=
   order: PartialOrder carrier
   action: carrier -> L
 
+instance {L}: CoeOut (Pom L) (Type) := {
+  coe := Pom.carrier
+}
+
 structure PomIso {L} (α β: Pom L) extends RelIso α.order.le β.order.le :=
   action_eq: ∀e: α.carrier, α.action e = β.action (toFun e)
 
@@ -182,23 +186,20 @@ def SubPom.order {L} {P: Pom L} (S: SubPom P): PartialOrder S.carrier
 def SubPom.action {L} {P: Pom L} (S: SubPom P) (p: S.carrier): L
   := P.action p.val
 
+--TODO: coerce SubPom to Pom
 def SubPom.toPom {L} {P: Pom L} (S: SubPom P): Pom L := {
   carrier := S.carrier,
   order := S.order,
   action := S.action
 }
 
-def Pom.finite {L} (P: Pom L): Prop
-  := Finite P.carrier
+instance {L} {α: Pom L}: CoeOut (SubPom α) (Pom L) := {
+  coe := SubPom.toPom
+}
 
-def Pom.infinite {L} (P: Pom L): Prop
-  := Infinite P.carrier
-
-def SubPom.finite {L} {P: Pom L} (S: SubPom P): Prop
-  := Finite S.carrier
-
-def SubPom.infinite {L} {P: Pom L} (S: SubPom P): Prop
-  := Infinite S.carrier
+instance {L} {α: Pom L}: CoeOut (SubPom α) (Type) := {
+  coe := SubPom.carrier
+}
 
 def Pom.pred {L} (P: Pom L) (p: P.carrier): SubPom P
   := ⟨ P.order.le p ⟩
@@ -209,16 +210,6 @@ def SubPom.pred {L} {P: Pom L} (A: SubPom P) (p: A.carrier)
 def SubPom.full_pred_pred_full {L} (P: Pom L) (p)
   : (full P).pred p = P.pred p.val
   := full_intersection (P.pred p.val)
-
-def Pom.finite_pred {L} (α: Pom L) (p: α.carrier): Prop
-  := (α.pred p).finite
-
-def Pom.infinite_pred {L} (α: Pom L) (p: α.carrier): Prop
-  := (α.pred p).infinite
-
-def SubPom.infinite_pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier)
-  : Prop
-  := (ρ.pred p).infinite
 
 theorem Pom.full_carrier_equiv {L} (α: Pom L)
   : α.carrier ≃ (SubPom.full α).carrier
@@ -235,21 +226,21 @@ class Ticked (L: Type) :=
 structure PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α): Prop :=
   infinite_or_tick: ∀p: α.carrier, 
     ρ.contains p ∨ 
-    α.infinite_pred p ∨ 
+    Infinite (α.pred p) ∨ 
     α.action p = Ticked.δ
   infinite_preserved: ∀p: ρ.toPom.carrier,
-    α.infinite_pred p.val -> ρ.infinite_pred p
+    Infinite (α.pred p.val) -> Infinite (ρ.pred p)
   infinite_shared:
-    α.infinite -> ρ.infinite
+    Infinite α -> Infinite ρ
   empty_shared:
-    IsEmpty ρ.carrier -> IsEmpty α.carrier
+    IsEmpty ρ -> IsEmpty α
 
 theorem PomReduces.refl {L} [Ticked L] (α: Pom L):
   PomReduces (SubPom.full α)
   := {
-    infinite_or_tick := λp => Or.inl True.intro,
-    infinite_preserved := λp H => by 
-      rw [SubPom.infinite_pred, SubPom.full_pred_pred_full]
+    infinite_or_tick := λ_ => Or.inl True.intro,
+    infinite_preserved := λ_ H => by 
+      rw [SubPom.full_pred_pred_full]
       exact H
     infinite_shared := λH => 
       α.full_carrier_equiv.infinite_iff.mp H,
@@ -262,22 +253,39 @@ theorem PomReduces.empty {L} [Ticked L] {α: Pom L}
   := P.empty_shared ⟨λ⟨_, C⟩ => C⟩
 
 theorem PomReduces.intersection {L} [Ticked L] 
-  (α: Pom L)
-  (ρ σ: SubPom α)
-  : 
-  PomReduces ρ 
-  -> PomReduces σ 
-  -> PomReduces (ρ.intersection σ)
-  := sorry 
+  {α: Pom L} {ρ σ: SubPom α} (P: PomReduces ρ) (S: PomReduces σ) 
+  : PomReduces (ρ.intersection σ)
+  := {
+    infinite_or_tick := λe => by
+      cases P.infinite_or_tick e <;>
+      cases S.infinite_or_tick e <;>
+      simp [*, SubPom.intersection]
+    infinite_preserved := λe H => sorry,
+    infinite_shared := λH => sorry,
+    empty_shared := λH => sorry
+  }
 
 theorem PomReduces.union {L} [Ticked L]
-  (α: Pom L)
-  (ρ σ: SubPom α)
-  : 
-  PomReduces ρ 
-  -> PomReduces σ 
-  -> PomReduces (ρ.union σ)
-  := sorry 
+  {α: Pom L} {ρ σ: SubPom α} (P: PomReduces ρ) (S: PomReduces σ) 
+  : PomReduces (ρ.union σ)
+  := {
+    infinite_or_tick := λe => by
+      cases P.infinite_or_tick e <;>
+      cases S.infinite_or_tick e <;>
+      simp [*, SubPom.union]
+    infinite_preserved := λe H => sorry,
+    infinite_shared := λH => sorry,
+    empty_shared := λH => sorry
+  } 
+
+def SubPom.flatten {L} {α: Pom L} {ρ: SubPom α} 
+  (σ: SubPom ρ.toPom)
+  : SubPom α
+  := ⟨λe => (p: ρ.contains e) -> σ.contains ⟨e, p⟩⟩
+
+theorem PomReduces.trans {L} [Ticked L] {α: Pom L} {ρ: SubPom α} {σ: SubPom ρ.toPom}
+  : PomReduces ρ -> PomReduces σ -> PomReduces (SubPom.flatten σ) 
+  := sorry
 
 structure PomReduct {L} [Ticked L] (α: Pom L) :=
   shared: SubPom α
