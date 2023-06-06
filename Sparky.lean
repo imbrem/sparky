@@ -259,7 +259,7 @@ theorem PomReduces.refl {L} [Ticked L] (α: Pom L):
 theorem PomReduces.empty {L} [Ticked L] {α: Pom L}
   (P: PomReduces (SubPom.empty α))
   : IsEmpty α.carrier
-  := sorry
+  := P.empty_shared ⟨λ⟨_, C⟩ => C⟩
 
 theorem PomReduces.intersection {L} [Ticked L] 
   (α: Pom L)
