@@ -410,7 +410,8 @@ def PomEquiv.trans_carrier {L} [Ticked L] {α β γ: Pom L}
   : Type
   := β.carrier ⊕ (P.left_rem ⊕ Q.right_rem)
 
-def PomEquiv.trans_le {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+def PomEquiv.trans_le {L} [Ticked L] {α β γ: Pom L} 
+  {P: PomEquiv α β} {Q: PomEquiv β γ}
   : P.trans_carrier Q ->  P.trans_carrier Q -> Prop
   | Sum.inl l, Sum.inl r => β.order.le l r
   | Sum.inl l, Sum.inr (Sum.inl r) => P.shared.order.le (P.iso_right.invFun l).val r.val
@@ -431,7 +432,7 @@ def PomEquiv.trans_le {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: P
 def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PartialOrder (P.trans_carrier Q)
   := {
-    le := P.trans_le Q,
+    le := trans_le,
     le_refl := λe => match e with
     | Sum.inl e => β.order.le_refl e
     | Sum.inr (Sum.inl e) => P.shared.order.le_refl e.val
@@ -544,7 +545,26 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
       | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
         Q.shared.order.le_trans _ _ _ Hxy Hyz
       ,
-    le_antisymm := sorry
+    le_antisymm := λa b Hab Hba =>
+      match a, b with
+      | Sum.inl a, Sum.inl b => 
+        by rw [β.order.le_antisymm a b Hab Hba]
+      | Sum.inl a, Sum.inr (Sum.inl b) => 
+        False.elim sorry
+      | Sum.inl a, Sum.inr (Sum.inr b) => 
+        False.elim sorry
+      | Sum.inr (Sum.inl a), Sum.inl b => 
+        False.elim sorry
+      | Sum.inr (Sum.inl a), Sum.inr (Sum.inl b) => 
+        by rw [P.shared.order.le_antisymm a b Hab Hba]
+      | Sum.inr (Sum.inl a), Sum.inr (Sum.inr b) => 
+        False.elim sorry
+      | Sum.inr (Sum.inr a), Sum.inl b => 
+        False.elim sorry
+      | Sum.inr (Sum.inr a), Sum.inr (Sum.inl b) => 
+        False.elim sorry
+      | Sum.inr (Sum.inr a), Sum.inr (Sum.inr b) => 
+        by rw [Q.shared.order.le_antisymm a b Hab Hba]
   }
 
 def PomEquiv.trans_action {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
