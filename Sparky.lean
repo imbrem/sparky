@@ -389,3 +389,11 @@ def PomEquiv.refl {L} [Ticked L] (α: Pom L): PomEquiv α α := {
   iso_left := SubPom.iso_univ α,
   iso_right := SubPom.iso_univ α
 }
+
+def PomEquiv.symm {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): PomEquiv β α := {
+  shared := P.shared,
+  reduce_left := P.reduce_right,
+  reduce_right := P.reduce_left,
+  iso_left := P.iso_right,
+  iso_right := P.iso_left
+}
