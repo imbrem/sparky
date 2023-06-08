@@ -495,7 +495,16 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
             )
           ))
       | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => 
-        sorry
+        match Hxy, Hyz with
+        | ⟨qb, Hxq, Hqy⟩, ⟨rb, Hyr, Hrz⟩ => 
+           P.shared.order.le_trans _ _ _ Hxq
+            (P.shared.order.le_trans _ _ _ (
+              P.iso_right.map_rel_iff.mp (Q.iso_left.symm.map_rel_iff.mp (
+                Q.shared.order.le_trans _ _ _ 
+                  ((RelIso.apply_symm_apply P.iso_right.toRelIso qb).symm ▸ Hqy) 
+                  ((RelIso.apply_symm_apply P.iso_right.toRelIso rb).symm ▸ Hyr)
+              ))
+            ) Hrz)
       | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
         sorry
       | Sum.inr (Sum.inr _xc), Sum.inl _yb, Sum.inl _zb => 
