@@ -424,8 +424,8 @@ def PomEquiv.trans_le {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: P
   | Sum.inr (Sum.inr l), Sum.inl r => Q.shared.order.le l.val (Q.iso_left.invFun r).val
   | Sum.inr (Sum.inr l), Sum.inr (Sum.inl r) => 
     ∃b: β.carrier, 
-      P.shared.order.le r.val (P.iso_right.invFun b).val ∧
-      Q.shared.order.le l.val (Q.iso_left.invFun b).val
+      Q.shared.order.le l.val (Q.iso_left.invFun b).val ∧
+      P.shared.order.le (P.iso_right.invFun b).val r.val
   | Sum.inr (Sum.inr l), Sum.inr (Sum.inr r) => Q.shared.order.le l.val r.val
 
 def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
@@ -450,17 +450,27 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
         P.shared.order.le_trans _ _ _ Hxy Hyz
       | Sum.inl xb, Sum.inr (Sum.inl ya), Sum.inr (Sum.inr zc) => 
         match Hyz with
-        | ⟨q, Hyz⟩ =>
+        | ⟨qb, ⟨Hyq, Hqz⟩⟩ =>
           Q.shared.order.le_trans _ _ _ 
             (Q.iso_left.map_rel_iff.mp (P.iso_right.symm.map_rel_iff.mp (
               P.shared.order.le_trans _ _ _ 
               ((RelIso.apply_symm_apply Q.iso_left.toRelIso xb).symm ▸ Hxy) 
-              ((RelIso.apply_symm_apply Q.iso_left.toRelIso q).symm ▸ Hyz.1)
+              ((RelIso.apply_symm_apply Q.iso_left.toRelIso qb).symm ▸ Hyq)
             ))) 
-            Hyz.2
+            Hqz
       | Sum.inl _xb, Sum.inr (Sum.inr _yc), Sum.inl _zb => 
         Q.iso_left.symm.map_rel_iff.mp (Q.shared.order.le_trans _ _ _ Hxy Hyz)
-      | Sum.inl _xb, Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => sorry
+      | Sum.inl xb, Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => 
+        match Hyz with
+        | ⟨qb, ⟨Hyq, Hqz⟩⟩ =>
+            P.shared.order.le_trans _ _ _ 
+              (P.iso_right.map_rel_iff.mp (Q.iso_left.symm.map_rel_iff.mp 
+              (
+                Q.shared.order.le_trans _ _ _ 
+                ((RelIso.apply_symm_apply P.iso_right.toRelIso xb).symm ▸ Hxy) 
+                ((RelIso.apply_symm_apply P.iso_right.toRelIso qb).symm ▸ Hyq)
+              )))
+              Hqz
       | Sum.inl _xb, Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
         Q.shared.order.le_trans _ _ _ Hxy Hyz
       | Sum.inr (Sum.inl _xa), Sum.inl _yb, Sum.inl _zb => 
