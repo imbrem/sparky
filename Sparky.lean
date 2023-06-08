@@ -20,21 +20,21 @@ instance {L}: CoeOut (Pom L) (Type) := {
 }
 
 structure PomIso {L} (α β: Pom L) extends RelIso α.order.le β.order.le :=
-  action_eq: ∀e: α.carrier, α.action e = β.action (toFun e)
+  action_eq: ∀{e: α.carrier}, α.action e = β.action (toFun e)
 
 def PomIso.refl {L} (α: Pom L): PomIso α α := {
   toRelIso := RelIso.refl _,
-  action_eq := λ_ => rfl
+  action_eq := rfl
 }
 
 def PomIso.trans {L} {α β γ: Pom L} (φ: PomIso α β) (ψ: PomIso β γ): PomIso α γ := {
   toRelIso := RelIso.trans φ.toRelIso ψ.toRelIso,
-  action_eq := λ_ => by rw [φ.action_eq, ψ.action_eq]; rfl
+  action_eq := λ{_} => by rw [φ.action_eq, ψ.action_eq]; rfl
 }
 
 def PomIso.symm {L} {α β: Pom L} (φ: PomIso α β): PomIso β α := {
   toRelIso := RelIso.symm φ.toRelIso,
-  action_eq := λ_ => by simp [φ.action_eq]
+  action_eq := λ{_} => by simp [φ.action_eq]
 }
 
 def Pom.sigma {L} {N: Type} [PartialOrder N] (F: N -> Pom L): Pom L := {
@@ -79,7 +79,7 @@ def PomIso.seq {L} {α β α' β': Pom L}
   : PomIso (α.seq β) (α'.seq β')
   := {
     toRelIso := RelIso.sumLexCongr Iα.toRelIso Iβ.toRelIso,
-    action_eq := λe => 
+    action_eq := λ{e} => 
       by 
         cases e <;> 
         simp [
@@ -130,7 +130,7 @@ def PomIso.par {L} {α β α' β': Pom L}
     map_rel_iff' := λ{a b} => by
       cases a <;> cases b <;>
       simp [Pom.par, Iα.map_rel_iff, Iβ.map_rel_iff]
-    action_eq := λe => by 
+    action_eq := λ{e} => by 
       cases e <;> 
       simp [Pom.par, Equiv.sumCongr, Iα.action_eq, Iβ.action_eq]
   }
@@ -240,6 +240,16 @@ theorem Pom.univ_carrier_equiv {L} (α: Pom L)
     λ_ => rfl,
     λ⟨_, _⟩ => rfl
   ⟩
+
+def SubPom.iso_univ {L} (α: Pom L): PomIso (SubPom.univ α) α
+  := {
+    toFun := λ⟨e, _⟩ => e,
+    invFun := λe => ⟨e, True.intro⟩,
+    left_inv := λ_ => rfl,
+    right_inv := λ_ => rfl,
+    map_rel_iff' := Iff.rfl,
+    action_eq := rfl
+  }
 
 class Ticked (L: Type) :=
   δ: L
@@ -371,3 +381,11 @@ structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
   reduce_right: PomReduct shared
   iso_left: PomIso reduce_left α
   iso_right: PomIso reduce_right β
+
+def PomEquiv.refl {L} [Ticked L] (α: Pom L): PomEquiv α α := {
+  shared := α
+  reduce_left := PomReduct.univ α
+  reduce_right := PomReduct.univ α
+  iso_left := SubPom.iso_univ α,
+  iso_right := SubPom.iso_univ α
+}
