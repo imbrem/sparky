@@ -340,6 +340,14 @@ structure PomReduct {L} [Ticked L] (α: Pom L) :=
   shared: SubPom α
   is_reduct: PomReduces shared
 
+instance {L} [Ticked L] {α: Pom L}: Coe (PomReduct α) (SubPom α) := {
+  coe := PomReduct.shared
+}
+
+instance {L} [Ticked L] {α: Pom L}: CoeOut (PomReduct α) (Pom L) := {
+  coe := λe => e.shared.toPom
+}
+
 def PomReduces.toReduct {L} [Ticked L] {α: Pom L} {ρ: SubPom α} 
   (P: PomReduces ρ):
   PomReduct α
@@ -353,30 +361,8 @@ def PomReduct.refl {L} [Ticked L] (α: Pom L):
   := (PomReduces.refl α).toReduct
 
 structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
-  reduce_left: PomReduct α
-  reduce_right: PomReduct β
-  iso: PomIso reduce_left.shared.toPom reduce_right.shared.toPom
-
-theorem PomEquiv.refl {L} [Ticked L] (α: Pom L):
-  PomEquiv α α := {
-    reduce_left := PomReduct.refl α,
-    reduce_right := PomReduct.refl α,
-    iso := PomIso.refl _
-  }
-
-theorem PomEquiv.symm {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
-  : PomEquiv β α := {
-    reduce_left := P.reduce_right,
-    reduce_right := P.reduce_left,
-    iso := P.iso.symm 
-  }
-
-theorem PomEquiv.trans {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β)
-  (Q: PomEquiv β γ)
-  : PomEquiv α γ
-  := {
-    reduce_left := sorry,
-    reduce_right := sorry,
-    iso := sorry
-  }
+  shared: Pom L
+  reduce_left: PomReduct shared
+  reduce_right: PomReduct shared
+  iso_left: PomIso reduce_left α
+  iso_right: PomIso reduce_right β
