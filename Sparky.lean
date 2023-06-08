@@ -450,7 +450,7 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
         P.shared.order.le_trans _ _ _ Hxy Hyz
       | Sum.inl xb, Sum.inr (Sum.inl ya), Sum.inr (Sum.inr zc) => 
         match Hyz with
-        | ⟨qb, ⟨Hyq, Hqz⟩⟩ =>
+        | ⟨qb, Hyq, Hqz⟩ =>
           Q.shared.order.le_trans _ _ _ 
             (Q.iso_left.map_rel_iff.mp (P.iso_right.symm.map_rel_iff.mp (
               P.shared.order.le_trans _ _ _ 
@@ -462,7 +462,7 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
         Q.iso_left.symm.map_rel_iff.mp (Q.shared.order.le_trans _ _ _ Hxy Hyz)
       | Sum.inl xb, Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => 
         match Hyz with
-        | ⟨qb, ⟨Hyq, Hqz⟩⟩ =>
+        | ⟨qb, Hyq, Hqz⟩ =>
             P.shared.order.le_trans _ _ _ 
               (P.iso_right.map_rel_iff.mp (Q.iso_left.symm.map_rel_iff.mp 
               (
@@ -477,25 +477,59 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
         P.shared.order.le_trans _ _ _ Hxy (P.iso_right.symm.map_rel_iff.mpr Hyz)
       | Sum.inr (Sum.inl _xa), Sum.inl _yb, Sum.inr (Sum.inl _za) => 
         P.shared.order.le_trans _ _ _ Hxy Hyz
-      | Sum.inr (Sum.inl _xa), Sum.inl _yb, Sum.inr (Sum.inr _zc) => sorry
+      | Sum.inr (Sum.inl _xa), Sum.inl yb, Sum.inr (Sum.inr _zc) => ⟨yb, Hxy, Hyz⟩
       | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inl _ya), Sum.inl _zb => 
         P.shared.order.le_trans _ _ _ Hxy Hyz
       | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inl _ya), Sum.inr (Sum.inl _za) => 
         P.shared.order.le_trans _ _ _ Hxy Hyz
       | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inl _ya), Sum.inr (Sum.inr _zc) => 
+        match Hyz with
+        | ⟨qb, Hyq, Hqz⟩ => ⟨qb, P.shared.order.le_trans _ _ _ Hxy Hyq, Hqz⟩
+      | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inl zb => 
+        match Hxy with
+        | ⟨qb, Hxq, Hqy⟩ => P.shared.order.le_trans _ _ _ Hxq 
+          (P.iso_right.map_rel_iff.mp (Q.iso_left.symm.map_rel_iff.mp (
+              Q.shared.order.le_trans _ _ _
+              ((RelIso.apply_symm_apply P.iso_right.toRelIso qb).symm ▸ Hqy)
+              ((RelIso.apply_symm_apply P.iso_right.toRelIso zb).symm ▸ Hyz)
+            )
+          ))
+      | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => 
         sorry
-      | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inl _zb => sorry
-      | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => sorry
-      | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => sorry
+      | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
+        sorry
       | Sum.inr (Sum.inr _xc), Sum.inl _yb, Sum.inl _zb => 
         Q.shared.order.le_trans _ _ _ Hxy (Q.iso_left.symm.map_rel_iff.mpr Hyz)
-      | Sum.inr (Sum.inr _xc), Sum.inl _yb, Sum.inr (Sum.inl _za) => sorry
-      | Sum.inr (Sum.inr _xc), Sum.inl _yb, Sum.inr (Sum.inr _zc) => sorry
-      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inl _ya), Sum.inl _zb => sorry
-      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inl _ya), Sum.inr (Sum.inl _za) => sorry
-      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inl _ya), Sum.inr (Sum.inr _zc) => sorry
-      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inl _zb => sorry
-      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => sorry
+      | Sum.inr (Sum.inr _xc), Sum.inl yb, Sum.inr (Sum.inl _za) => ⟨yb, Hxy, Hyz⟩
+      | Sum.inr (Sum.inr _xc), Sum.inl _yb, Sum.inr (Sum.inr _zc) => 
+        Q.shared.order.le_trans _ _ _ Hxy Hyz
+      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inl _ya), Sum.inl zb => 
+        match Hxy with
+        | ⟨qb, Hxq, Hqy⟩ => Q.shared.order.le_trans _ _ _ Hxq 
+          (Q.iso_left.map_rel_iff.mp (P.iso_right.symm.map_rel_iff.mp (
+            P.shared.order.le_trans _ _ _
+            ((RelIso.apply_symm_apply Q.iso_left.toRelIso qb).symm ▸ Hqy)
+            ((RelIso.apply_symm_apply Q.iso_left.toRelIso zb).symm ▸ Hyz)
+          )
+          ))
+      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inl _ya), Sum.inr (Sum.inl _za) => 
+        match Hxy with
+        | ⟨qb, Hxq, Hqy⟩ => ⟨qb, Hxq, P.shared.order.le_trans _ _ _ Hqy Hyz⟩
+      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inl _ya), Sum.inr (Sum.inr _zc) => 
+        match Hxy, Hyz with
+        | ⟨qb, Hxq, Hqy⟩, ⟨rb, Hyr, Hrz⟩ => 
+           Q.shared.order.le_trans _ _ _ Hxq
+            (Q.shared.order.le_trans _ _ _ (
+              Q.iso_left.map_rel_iff.mp (P.iso_right.symm.map_rel_iff.mp (
+                P.shared.order.le_trans _ _ _ 
+                  ((RelIso.apply_symm_apply Q.iso_left.toRelIso qb).symm ▸ Hqy) 
+                  ((RelIso.apply_symm_apply Q.iso_left.toRelIso rb).symm ▸ Hyr)
+              ))
+            ) Hrz)
+      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inl _zb => 
+        Q.shared.order.le_trans _ _ _ Hxy Hyz
+      | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => 
+        sorry
       | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
         Q.shared.order.le_trans _ _ _ Hxy Hyz
       ,
