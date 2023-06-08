@@ -555,16 +555,16 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
         False.elim sorry
       | Sum.inr (Sum.inl a), Sum.inl b => 
         False.elim sorry
-      | Sum.inr (Sum.inl a), Sum.inr (Sum.inl b) => 
-        by rw [P.shared.order.le_antisymm a b Hab Hba]
+      | Sum.inr (Sum.inl ⟨a, _⟩), Sum.inr (Sum.inl ⟨b, _⟩) => 
+        by simp [P.shared.order.le_antisymm a b Hab Hba]
       | Sum.inr (Sum.inl a), Sum.inr (Sum.inr b) => 
         False.elim sorry
       | Sum.inr (Sum.inr a), Sum.inl b => 
         False.elim sorry
       | Sum.inr (Sum.inr a), Sum.inr (Sum.inl b) => 
         False.elim sorry
-      | Sum.inr (Sum.inr a), Sum.inr (Sum.inr b) => 
-        by rw [Q.shared.order.le_antisymm a b Hab Hba]
+      | Sum.inr (Sum.inr ⟨a, _⟩), Sum.inr (Sum.inr ⟨b, _⟩) => 
+        by simp [Q.shared.order.le_antisymm a b Hab Hba]
   }
 
 def PomEquiv.trans_action {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
