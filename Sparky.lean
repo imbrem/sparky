@@ -1,12 +1,13 @@
 import Mathlib.Init.Algebra.Order
 import Mathlib.Order.RelIso.Basic
 import Mathlib.Order.Synonym
+import Mathlib.Data.Set.Finite
 import Mathlib.Data.Sigma.Order
 import Mathlib.Data.Sum.Order
 import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Fintype.Card
 import Mathlib.Logic.Equiv.Defs
-import Mathlib.Data.Set.Finite
+import Mathlib.Logic.Relation
 
 open Classical
 
@@ -383,9 +384,9 @@ structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
   iso_right: PomIso reduce_right β
 
 def PomEquiv.refl {L} [Ticked L] (α: Pom L): PomEquiv α α := {
-  shared := α
-  reduce_left := PomReduct.univ α
-  reduce_right := PomReduct.univ α
+  shared := α,
+  reduce_left := PomReduct.univ α,
+  reduce_right := PomReduct.univ α,
   iso_left := SubPom.iso_univ α,
   iso_right := SubPom.iso_univ α
 }
@@ -397,3 +398,83 @@ def PomEquiv.symm {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): PomEquiv β
   iso_left := P.iso_right,
   iso_right := P.iso_left
 }
+
+def PomEquiv.left_rem {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): SubPom P.shared
+  := (P.reduce_left.shared.deletion P.reduce_right.shared)
+
+def PomEquiv.right_rem {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): SubPom P.shared
+  := (P.reduce_right.shared.deletion P.reduce_left.shared)
+
+def PomEquiv.trans_carrier {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+  := β.carrier ⊕ (P.left_rem ⊕ Q.right_rem)
+
+def PomEquiv.trans_le {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : P.trans_carrier Q ->  P.trans_carrier Q -> Prop
+  | Sum.inl l, Sum.inl r => β.order.le l r
+  | Sum.inl l, Sum.inr (Sum.inl r) => P.shared.order.le (P.iso_right.invFun l).val r.val
+  | Sum.inl l, Sum.inr (Sum.inr r) => Q.shared.order.le (Q.iso_left.invFun l).val r.val
+  | Sum.inr (Sum.inl l), Sum.inl r => P.shared.order.le l.val (P.iso_right.invFun r).val
+  | Sum.inr (Sum.inl l), Sum.inr (Sum.inl r) => P.shared.order.le l.val r.val
+  | Sum.inr (Sum.inl l), Sum.inr (Sum.inr r) => sorry
+  | Sum.inr (Sum.inr l), Sum.inl r => Q.shared.order.le l.val (Q.iso_left.invFun r).val
+  | Sum.inr (Sum.inr l), Sum.inr (Sum.inl r) => sorry
+  | Sum.inr (Sum.inr l), Sum.inr (Sum.inr r) => Q.shared.order.le l.val r.val
+
+def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PartialOrder (P.trans_carrier Q)
+  := {
+    le := P.trans_le Q,
+    le_refl := λe => match e with
+    | Sum.inl e => β.order.le_refl e
+    | Sum.inr (Sum.inl e) => P.shared.order.le_refl e.val
+    | Sum.inr (Sum.inr e) => Q.shared.order.le_refl e.val,
+    le_trans := λx y z => 
+      match x, y, z with
+      | Sum.inl xb, Sum.inl yb, Sum.inl zb => β.order.le_trans xb yb zb
+      | Sum.inl xb, Sum.inl yb, Sum.inr (Sum.inl za) => sorry
+      | Sum.inl xb, Sum.inl yb, Sum.inr (Sum.inr zc) => sorry
+      | Sum.inl xb, Sum.inr (Sum.inl ya), Sum.inl zb => sorry
+      | Sum.inl xb, Sum.inr (Sum.inl ya), Sum.inr (Sum.inl za) => sorry
+      | Sum.inl xb, Sum.inr (Sum.inl ya), Sum.inr (Sum.inr zc) => sorry
+      | Sum.inl xb, Sum.inr (Sum.inr yc), Sum.inl zb => sorry
+      | Sum.inl xb, Sum.inr (Sum.inr yc), Sum.inr (Sum.inl za) => sorry
+      | Sum.inl xb, Sum.inr (Sum.inr yc), Sum.inr (Sum.inr zc) => sorry
+      | Sum.inr (Sum.inl xa), Sum.inl yb, Sum.inl zb => sorry
+      | Sum.inr (Sum.inl xa), Sum.inl yb, Sum.inr (Sum.inl za) => sorry
+      | Sum.inr (Sum.inl xa), Sum.inl yb, Sum.inr (Sum.inr zc) => sorry
+      | Sum.inr (Sum.inl xa), Sum.inr (Sum.inl ya), Sum.inl zb => sorry
+      | Sum.inr (Sum.inl xa), Sum.inr (Sum.inl ya), Sum.inr (Sum.inl za) 
+        => P.shared.order.le_trans xa.val ya.val za.val
+      | Sum.inr (Sum.inl xa), Sum.inr (Sum.inl ya), Sum.inr (Sum.inr zc) => sorry
+      | Sum.inr (Sum.inl xa), Sum.inr (Sum.inr yc), Sum.inl zb => sorry
+      | Sum.inr (Sum.inl xa), Sum.inr (Sum.inr yc), Sum.inr (Sum.inl za) => sorry
+      | Sum.inr (Sum.inl xa), Sum.inr (Sum.inr yc), Sum.inr (Sum.inr zc) => sorry
+      | Sum.inr (Sum.inr xa), Sum.inl yb, Sum.inl zb => sorry
+      | Sum.inr (Sum.inr xc), Sum.inl yb, Sum.inr (Sum.inl za) => sorry
+      | Sum.inr (Sum.inr xc), Sum.inl yb, Sum.inr (Sum.inr zc) => sorry
+      | Sum.inr (Sum.inr xc), Sum.inr (Sum.inl ya), Sum.inl zb => sorry
+      | Sum.inr (Sum.inr xc), Sum.inr (Sum.inl ya), Sum.inr (Sum.inl za) => sorry
+      | Sum.inr (Sum.inr xc), Sum.inr (Sum.inl ya), Sum.inr (Sum.inr zc) => sorry
+      | Sum.inr (Sum.inr xc), Sum.inr (Sum.inr yc), Sum.inl zb => sorry
+      | Sum.inr (Sum.inr xc), Sum.inr (Sum.inr yc), Sum.inr (Sum.inl za) => sorry
+      | Sum.inr (Sum.inr xc), Sum.inr (Sum.inr yc), Sum.inr (Sum.inr zc)
+        => Q.shared.order.le_trans xc.val yc.val zc.val
+      ,
+    le_antisymm := sorry
+  }
+
+def PomEquiv.trans_action {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : P.trans_carrier Q -> L
+  | Sum.inl b => β.action b
+  | Sum.inr (Sum.inl p) => P.shared.action p.val
+  | Sum.inr (Sum.inr q) => Q.shared.action q.val
+
+def PomEquiv.trans {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomEquiv α γ
+  := {
+    shared := sorry,
+    reduce_left := sorry,
+    reduce_right := sorry,
+    iso_left := sorry,
+    iso_right := sorry
+  }
