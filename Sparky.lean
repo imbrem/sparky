@@ -506,7 +506,8 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
               ))
             ) Hrz)
       | Sum.inr (Sum.inl _xa), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
-        sorry
+        match Hxy with
+        | ⟨qb, Hxq, Hqy⟩ => ⟨qb, Hxq, Q.shared.order.le_trans _ _ _ Hqy Hyz⟩
       | Sum.inr (Sum.inr _xc), Sum.inl _yb, Sum.inl _zb => 
         Q.shared.order.le_trans _ _ _ Hxy (Q.iso_left.symm.map_rel_iff.mpr Hyz)
       | Sum.inr (Sum.inr _xc), Sum.inl yb, Sum.inr (Sum.inl _za) => ⟨yb, Hxy, Hyz⟩
@@ -538,7 +539,8 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
       | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inl _zb => 
         Q.shared.order.le_trans _ _ _ Hxy Hyz
       | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inl _za) => 
-        sorry
+        match Hyz with
+        | ⟨qb, Hyq, Hqz⟩ => ⟨qb, Q.shared.order.le_trans _ _ _ Hxy Hyq, Hqz⟩
       | Sum.inr (Sum.inr _xc), Sum.inr (Sum.inr _yc), Sum.inr (Sum.inr _zc) => 
         Q.shared.order.le_trans _ _ _ Hxy Hyz
       ,
