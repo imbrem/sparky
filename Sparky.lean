@@ -348,6 +348,11 @@ instance {L} [Ticked L] {α: Pom L}: CoeOut (PomReduct α) (Pom L) := {
   coe := λe => e.shared.toPom
 }
 
+def PomReduct.univ {L} [Ticked L] (α: Pom L): PomReduct α := {
+  shared := SubPom.univ α
+  is_reduct := PomReduces.refl α
+}
+
 def PomReduces.toReduct {L} [Ticked L] {α: Pom L} {ρ: SubPom α} 
   (P: PomReduces ρ):
   PomReduct α
