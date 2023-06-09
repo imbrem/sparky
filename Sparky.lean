@@ -628,12 +628,62 @@ def PomEquiv.trans_pom {L} [Ticked L] {α β γ: Pom L}
     action := trans_action
   }
 
+def PomEquiv.trans_sub_left_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := sorry
+
+def PomEquiv.trans_sub_right_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := sorry
+
+def PomEquiv.trans_sub_left {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomReduct (P.trans_pom Q)
+  := {
+    shared := P.trans_sub_left_pom Q,
+    is_reduct := sorry
+  }
+
+def PomEquiv.trans_sub_right {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomReduct (P.trans_pom Q)
+  := {
+    shared := P.trans_sub_right_pom Q,
+    is_reduct := sorry
+  }
+
+def PomEquiv.trans_sub_left_iso {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomIso (P.trans_sub_left_pom Q) α
+  := {
+      toFun := sorry,
+      invFun := sorry,
+      left_inv := sorry,
+      right_inv := sorry,
+      map_rel_iff' := sorry,
+      action_eq := sorry
+    }
+
+def PomEquiv.trans_sub_right_iso {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomIso (P.trans_sub_right_pom Q) γ
+  := {
+      toFun := sorry,
+      invFun := sorry,
+      left_inv := sorry,
+      right_inv := sorry,
+      map_rel_iff' := sorry,
+      action_eq := sorry
+    }
+
 def PomEquiv.trans {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomEquiv α γ
   := {
     shared := P.trans_pom Q,
-    reduce_left := sorry,
-    reduce_right := sorry,
-    iso_left := sorry,
-    iso_right := sorry
+    reduce_left := P.trans_sub_left Q,
+    reduce_right := P.trans_sub_right Q,
+    iso_left := P.trans_sub_left_iso Q,
+    iso_right := P.trans_sub_right_iso Q
   }
