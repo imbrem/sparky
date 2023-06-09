@@ -549,20 +549,50 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
       match a, b with
       | Sum.inl a, Sum.inl b => 
         by rw [β.order.le_antisymm a b Hab Hba]
-      | Sum.inl a, Sum.inr (Sum.inl b) => 
-        False.elim sorry
-      | Sum.inl a, Sum.inr (Sum.inr b) => 
-        False.elim sorry
-      | Sum.inr (Sum.inl a), Sum.inl b => 
-        False.elim sorry
+      | Sum.inl a, Sum.inr (Sum.inl ⟨b, ⟨Hbl, Hbr⟩⟩) => 
+        by {
+          apply False.elim;
+          apply Hbr;
+          simp [<-P.shared.order.le_antisymm _ b Hab Hba]
+        }
+      | Sum.inl a, Sum.inr (Sum.inr ⟨b, ⟨Hbl, Hbr⟩⟩) => 
+        by {
+          apply False.elim;
+          apply Hbr;
+          simp [<-Q.shared.order.le_antisymm _ b Hab Hba]
+        }
+      | Sum.inr (Sum.inl ⟨a, ⟨Hal, Har⟩⟩), Sum.inl b => 
+        by {
+          apply False.elim;
+          apply Har;
+          simp [P.shared.order.le_antisymm a _ Hab Hba]
+        }
       | Sum.inr (Sum.inl ⟨a, _⟩), Sum.inr (Sum.inl ⟨b, _⟩) => 
         by simp [P.shared.order.le_antisymm a b Hab Hba]
-      | Sum.inr (Sum.inl a), Sum.inr (Sum.inr b) => 
-        False.elim sorry
-      | Sum.inr (Sum.inr a), Sum.inl b => 
-        False.elim sorry
+      | Sum.inr (Sum.inl ⟨a, ⟨Hal, Har⟩⟩), Sum.inr (Sum.inr ⟨b, ⟨Hbl, Hbr⟩⟩) => 
+        match Hab, Hba with
+        | ⟨q, Haq, Hqb⟩, ⟨s, Hbs, Hsa⟩ => by {
+          sorry
+          -- have Hsq: s = q := sorry
+          --   -- β.order.le_antisymm s q 
+          --   -- (P.iso_right.symm.map_rel_iff.mp 
+          --   --   (P.shared.order.le_trans _ _ _ Hsa Haq))
+          --   -- (Q.iso_left.symm.map_rel_iff.mp 
+          --   --   (Q.shared.order.le_trans _ _ _ Hqb Hbs))
+          --   ;
+          -- apply False.elim;
+          -- apply Har;
+          -- simp [P.shared.order.le_antisymm a _ Haq (Hsq ▸ Hsa)]
+        } 
+      | Sum.inr (Sum.inr ⟨a, ⟨Hal, Har⟩⟩), Sum.inl b => 
+        by {
+          apply False.elim;
+          apply Har;
+          simp [Q.shared.order.le_antisymm a _ Hab Hba]
+        }
       | Sum.inr (Sum.inr a), Sum.inr (Sum.inl b) => 
-        False.elim sorry
+        match Hab, Hba with
+        | ⟨q, Haq, Hqb⟩, ⟨r, Hbr, Hrb⟩ => sorry
       | Sum.inr (Sum.inr ⟨a, _⟩), Sum.inr (Sum.inr ⟨b, _⟩) => 
         by simp [Q.shared.order.le_antisymm a b Hab Hba]
   }
