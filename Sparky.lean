@@ -631,32 +631,96 @@ def PomEquiv.trans_pom {L} [Ticked L] {α β γ: Pom L}
 def PomEquiv.trans_sub_left_pom {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : SubPom (P.trans_pom Q)
-  := sorry
+  := ⟨ 
+    λe => match e with
+    | Sum.inl _ | Sum.inr (Sum.inl _) => True
+    | _ => False 
+  ⟩ 
 
 def PomEquiv.trans_sub_right_pom {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : SubPom (P.trans_pom Q)
-  := sorry
+  := ⟨
+    λe => match e with
+    | Sum.inl _ | Sum.inr (Sum.inr _) => True
+    | _ => False 
+  ⟩
 
-def PomEquiv.trans_sub_left {L} [Ticked L] {α β γ: Pom L}
+def PomEquiv.trans_sub_src_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := ⟨
+    λe => match e with
+    | Sum.inl b => (P.iso_right.invFun b).val ∈ P.reduce_left.shared.contains
+    | Sum.inr (Sum.inl _) => True
+    | _ => False 
+  ⟩
+
+def PomEquiv.trans_sub_tar_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := ⟨
+    λe => match e with
+    | Sum.inl b => (Q.iso_left.invFun b).val ∈ Q.reduce_right.shared.contains
+    | Sum.inr (Sum.inr _) => True
+    | _ => False 
+  ⟩
+
+def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomReduct (P.trans_pom Q)
   := {
-    shared := P.trans_sub_left_pom Q,
-    is_reduct := sorry
+    shared := P.trans_sub_src_pom Q,
+    is_reduct := {
+      subset := sorry,
+      infinite_or_tick := sorry,
+      infinite_preserved := sorry,
+      infinite_shared := sorry,
+      empty_shared := sorry
+    }
   }
 
-def PomEquiv.trans_sub_right {L} [Ticked L] {α β γ: Pom L}
+def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomReduct (P.trans_pom Q)
   := {
-    shared := P.trans_sub_right_pom Q,
-    is_reduct := sorry
+    shared := P.trans_sub_tar_pom Q,
+    is_reduct := {
+      subset := sorry,
+      infinite_or_tick := sorry,
+      infinite_preserved := sorry,
+      infinite_shared := sorry,
+      empty_shared := sorry
+    }
   }
 
-def PomEquiv.trans_sub_left_iso {L} [Ticked L] {α β γ: Pom L}
+noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
-  : PomIso (P.trans_sub_left_pom Q) α
+  : PomIso (P.trans_sub_src_pom Q) α
+  := {
+      toFun := λe => match e with
+      | ⟨Sum.inl e, p⟩ => 
+        P.iso_left.toFun ⟨(P.iso_right.invFun e).val, p⟩ 
+      | ⟨Sum.inr (Sum.inl ⟨e, He, _⟩ ), _⟩ => 
+        P.iso_left.toFun ⟨e, He⟩ 
+      | ⟨Sum.inr (Sum.inr e), p⟩ => match p with.     
+      ,
+      invFun := λe => 
+        let ⟨e, He⟩ := P.iso_left.invFun e;
+        if p: e ∈ P.reduce_right.shared.contains
+        then 
+          ⟨Sum.inl (P.iso_right.toFun ⟨e, p⟩), sorry⟩
+        else 
+          ⟨Sum.inr (Sum.inl ⟨e, He, p⟩), True.intro⟩,
+      left_inv := sorry,
+      right_inv := sorry,
+      map_rel_iff' := sorry,
+      action_eq := sorry
+    }
+
+noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomIso (P.trans_sub_tar_pom Q) γ
   := {
       toFun := sorry,
       invFun := sorry,
@@ -666,24 +730,12 @@ def PomEquiv.trans_sub_left_iso {L} [Ticked L] {α β γ: Pom L}
       action_eq := sorry
     }
 
-def PomEquiv.trans_sub_right_iso {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ)
-  : PomIso (P.trans_sub_right_pom Q) γ
-  := {
-      toFun := sorry,
-      invFun := sorry,
-      left_inv := sorry,
-      right_inv := sorry,
-      map_rel_iff' := sorry,
-      action_eq := sorry
-    }
-
-def PomEquiv.trans {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+noncomputable def PomEquiv.trans {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomEquiv α γ
   := {
     shared := P.trans_pom Q,
-    reduce_left := P.trans_sub_left Q,
-    reduce_right := P.trans_sub_right Q,
-    iso_left := P.trans_sub_left_iso Q,
-    iso_right := P.trans_sub_right_iso Q
+    reduce_left := P.trans_sub_src Q,
+    reduce_right := P.trans_sub_tar Q,
+    iso_left := P.trans_sub_src_iso Q,
+    iso_right := P.trans_sub_tar_iso Q
   }
