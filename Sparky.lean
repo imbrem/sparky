@@ -590,9 +590,23 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
           apply Har;
           simp [Q.shared.order.le_antisymm a _ Hab Hba]
         }
-      | Sum.inr (Sum.inr a), Sum.inr (Sum.inl b) => sorry
-        -- λHab Hba => match Hab, Hba with
-        -- | ⟨q, Haq, Hqb⟩, ⟨r, Hbr, Hrb⟩ => sorry
+      | Sum.inr (Sum.inr ⟨a, ⟨Hal, Har⟩⟩), Sum.inr (Sum.inl ⟨b, ⟨Hbl, Hbr⟩⟩) => 
+        λHab Hba => by {
+          cases Hab with | intro q Hab => cases Hba with | intro s Hba =>
+          cases Hab with | intro Haq Hqb => cases Hba with | intro Hbs Hsa =>
+            have Hsq: s = q :=
+              β.order.le_antisymm s q 
+              (Q.iso_left.symm.map_rel_iff.mp 
+                (Q.shared.order.le_trans _ _ _ Hsa Haq))
+              (P.iso_right.symm.map_rel_iff.mp 
+                (P.shared.order.le_trans _ _ _ Hqb Hbs))
+              ;
+            apply False.elim;
+            apply Hbr;
+            have Hb' := P.shared.order.le_antisymm _ _ Hbs (Hsq.symm ▸ Hqb);
+            simp at *
+            simp [Hb']
+        } 
       | Sum.inr (Sum.inr ⟨a, _⟩), Sum.inr (Sum.inr ⟨b, _⟩) =>
         λHab Hba => by simp [Q.shared.order.le_antisymm a b Hab Hba]
   }
