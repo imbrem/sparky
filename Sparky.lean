@@ -666,33 +666,10 @@ def PomEquiv.trans_sub_tar_pom {L} [Ticked L] {α β γ: Pom L}
     | _ => False 
   ⟩
 
-def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ)
-  : PomReduct (P.trans_pom Q)
-  := {
-    shared := P.trans_sub_src_pom Q,
-    is_reduct := {
-      subset := sorry,
-      infinite_or_tick := sorry,
-      infinite_preserved := sorry,
-      infinite_shared := sorry,
-      empty_shared := sorry
-    }
-  }
-
-def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ)
-  : PomReduct (P.trans_pom Q)
-  := {
-    shared := P.trans_sub_tar_pom Q,
-    is_reduct := {
-      subset := sorry,
-      infinite_or_tick := sorry,
-      infinite_preserved := sorry,
-      infinite_shared := sorry,
-      empty_shared := sorry
-    }
-  }
+theorem PomEquiv.left_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
+  (p: (SubPom.toPom P.reduce_left.shared).carrier)
+  : P.iso_left.toRelIso.invFun (P.iso_left.toRelIso.toFun p) = p
+  := Equiv.symm_apply_apply _ p
 
 noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
@@ -709,10 +686,30 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
         let ⟨e, He⟩ := P.iso_left.invFun e;
         if p: e ∈ P.reduce_right.shared.contains
         then 
-          ⟨Sum.inl (P.iso_right.toFun ⟨e, p⟩), sorry⟩
+          ⟨Sum.inl (P.iso_right.toFun ⟨e, p⟩), by {
+            simp [
+              trans_sub_src_pom, 
+              Membership.mem, 
+              Set.Mem
+            ]
+            exact (RelIso.symm_apply_apply P.iso_right.toRelIso ⟨e, p⟩).symm ▸ He
+          }⟩
         else 
           ⟨Sum.inr (Sum.inl ⟨e, He, p⟩), True.intro⟩,
-      left_inv := sorry,
+      left_inv := λ⟨e, H⟩ => match e with
+      | Sum.inl e => by {
+        simp only []
+        rw [P.left_iso_self]
+        simp only []
+        split
+        case inl H => simp
+        case inr H' => 
+          apply False.elim;
+          apply H';
+          simp
+      }
+      | Sum.inr (Sum.inl e) => sorry
+      ,
       right_inv := sorry,
       map_rel_iff' := sorry,
       action_eq := sorry
@@ -729,6 +726,38 @@ noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
       map_rel_iff' := sorry,
       action_eq := sorry
     }
+
+def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomReduct (P.trans_pom Q)
+  := {
+    shared := P.trans_sub_src_pom Q,
+    is_reduct := {
+      subset := λ_ _ => True.intro,
+      infinite_or_tick := λ⟨p, _⟩ => 
+        match p with
+        | Sum.inl p =>  sorry
+        | Sum.inr (Sum.inl p) => sorry
+        | Sum.inr (Sum.inr p) => sorry,
+      infinite_preserved := sorry,
+      infinite_shared := sorry,
+      empty_shared := sorry
+    }
+  }
+
+def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomReduct (P.trans_pom Q)
+  := {
+    shared := P.trans_sub_tar_pom Q,
+    is_reduct := {
+      subset := λ_ _ => True.intro,
+      infinite_or_tick := sorry,
+      infinite_preserved := sorry,
+      infinite_shared := sorry,
+      empty_shared := sorry
+    }
+  }
 
 noncomputable def PomEquiv.trans {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomEquiv α γ
