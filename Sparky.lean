@@ -708,7 +708,14 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
           apply H';
           simp
       }
-      | Sum.inr (Sum.inl e) => sorry
+      | Sum.inr (Sum.inl ⟨e, He, Hr⟩) => by {
+        simp only []
+        rw [P.left_iso_self]
+        simp only []
+        split
+        case inl H => exact (Hr H).elim
+        case inr H => simp
+      }
       ,
       right_inv := sorry,
       map_rel_iff' := sorry,
