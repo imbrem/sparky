@@ -611,16 +611,27 @@ def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q
         λHab Hba => by simp [Q.shared.order.le_antisymm a b Hab Hba]
   }
 
-def PomEquiv.trans_action {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
+def PomEquiv.trans_action {L} [Ticked L] {α β γ: Pom L} 
+  {P: PomEquiv α β} {Q: PomEquiv β γ}
   : P.trans_carrier Q -> L
   | Sum.inl b => β.action b
   | Sum.inr (Sum.inl p) => P.shared.action p.val
   | Sum.inr (Sum.inr q) => Q.shared.action q.val
 
+
+def PomEquiv.trans_pom {L} [Ticked L] {α β γ: Pom L} 
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Pom L
+  := {
+    carrier := P.trans_carrier Q,
+    order := P.trans_order Q,
+    action := trans_action
+  }
+
 def PomEquiv.trans {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomEquiv α γ
   := {
-    shared := sorry,
+    shared := P.trans_pom Q,
     reduce_left := sorry,
     reduce_right := sorry,
     iso_left := sorry,
