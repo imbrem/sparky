@@ -38,6 +38,11 @@ def PomIso.symm {L} {α β: Pom L} (φ: PomIso α β): PomIso β α := {
   action_eq := λ{_} => by simp [φ.action_eq]
 }
 
+def PomIso.symm_toRelIso {L} {α β: Pom L} (φ: PomIso α β): φ.symm.toRelIso = φ.toRelIso.symm 
+  := rfl
+def PomIso.symm_toEquiv {L} {α β: Pom L} (φ: PomIso α β): φ.symm.toEquiv = φ.toEquiv.symm 
+  := rfl
+
 def Pom.sigma {L} {N: Type} [PartialOrder N] (F: N -> Pom L): Pom L := {
   carrier := Lex (Sigma (λn => (F n).carrier)),
   order := @Sigma.Lex.partialOrder _ _ _ (λn => (F n).order),
@@ -717,7 +722,28 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
         case inr H => simp
       }
       ,
-      right_inv := sorry,
+      right_inv := λe => by {
+        simp only [Equiv.invFun_as_coe, Equiv.toFun_as_coe]
+        generalize He: P.iso_left.toEquiv.symm e = e';
+        cases e' with
+        | mk e' He' =>
+          simp only []
+          let Pr := e' ∈ P.reduce_right.shared.contains;
+          cases Classical.em Pr with
+          | inl H =>
+            simp only [H]
+            apply P.iso_left.symm.injective;
+            rw [<-RelIso.coe_toEquiv]
+            rw [PomIso.symm_toEquiv]
+            rw [He]
+            rw [P.iso_left.left_inv']
+            apply Subtype.eq
+            simp only []
+            rw [P.iso_right.left_inv']
+          | inr H => 
+            simp only [H, <-He]
+            rw [P.iso_left.right_inv']
+      },
       map_rel_iff' := sorry,
       action_eq := sorry
     }
