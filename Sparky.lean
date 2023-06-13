@@ -246,6 +246,40 @@ def SubPom.truncation {L} {α: Pom L} (ρ: SubPom α)
 def SubPom.t_inter {L} {α: Pom L} (ρ σ: SubPom α)
   := ρ.truncation.inter σ.truncation
 
+def Pom.pred_carrier {L} (α: Pom L) (p: α.carrier):
+  α.pred p = (SubPom.univ α).pred ⟨p, True.intro⟩
+  := by simp [SubPom.pred, SubPom.inter, SubPom.univ]
+
+def PomIso.pred {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
+  PomIso (α.pred p) (β.pred (φ.toFun p)).toPom
+  := {
+    toFun := λ⟨e, He⟩ => ⟨φ.toFun e, φ.map_rel_iff.mpr He⟩,
+    invFun := λ⟨e, He⟩ => ⟨
+      φ.invFun e, by
+        have He': e = φ.toFun (φ.invFun e) := by simp;
+        rw [He'] at He;
+        exact φ.map_rel_iff.mp He;
+      ⟩,
+    left_inv := λ⟨e, _⟩ => Subtype.eq (φ.left_inv e),
+    right_inv := λ⟨e, _⟩ => Subtype.eq (φ.right_inv e),
+    map_rel_iff' := λ{a b} => by
+      cases a; cases b;
+      exact φ.map_rel_iff',
+    action_eq := λ{a} => by cases a; exact φ.action_eq
+  }
+
+def PomIso.pred_infinite_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
+  Infinite (α.pred p) ↔ Infinite (β.pred (φ.toFun p))
+  := (φ.pred p).infinite_iff
+
+def PomIso.pred_empty_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
+  IsEmpty (α.pred p) ↔ IsEmpty (β.pred (φ.toFun p))
+  := (φ.pred p).empty_iff
+
+def PomIso.pred_inv {L} {α β: Pom L} (φ: PomIso α β) (p: β.carrier):
+  PomIso (α.pred (φ.invFun p)) (β.pred p).toPom
+  := sorry
+
 def SubPom.univ_pred_pred_univ {L} (α: Pom L) (p)
   : (univ α).pred p = α.pred p.val
   := univ_inter (α.pred p.val)
