@@ -863,7 +863,27 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
           ]
           rfl
       ,
-      action_eq := sorry
+      action_eq := λ{a} =>
+        match a with
+        | ⟨Sum.inl a, Ha⟩ => by
+          simp only [
+            trans_pom, trans_action,
+            SubPom.toPom, SubPom.action,
+            P.iso_right.symm.action_eq,
+            P.iso_left.symm.action_eq,
+            PomIso.symm
+          ]
+          rw [trans_src_toFun_mid]
+          simp
+          rfl
+        | ⟨Sum.inr (Sum.inl a), Ha⟩ => by
+          simp only [
+            trans_pom, trans_action,
+            SubPom.toPom, SubPom.action,
+            P.iso_left.symm.action_eq
+          ]
+          rw [trans_src_toFun_left]
+          sorry
     }
 
 noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
