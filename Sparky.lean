@@ -715,12 +715,12 @@ def PomEquiv.trans_src_toFun {L} [Ticked L] {α β γ: Pom L}
         P.iso_left.toFun ⟨e.val, e.property.left⟩ 
       | ⟨Sum.inr (Sum.inr _), p⟩ => match p with.
 
-theorem PomEquiv.trans_toFun_mid {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_src_toFun_mid {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e: β.carrier) (p)
   : P.trans_src_toFun Q ⟨Sum.inl e, p⟩  = P.iso_left.toFun ⟨(P.iso_right.invFun e).val, p⟩ 
   := rfl
 
-theorem PomEquiv.trans_toFun_left {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_src_toFun_left {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e: P.left_rem.carrier) (p)
   : P.trans_src_toFun Q ⟨Sum.inr (Sum.inl e), p⟩ = P.iso_left.toFun ⟨e.val, e.property.left⟩ 
   := rfl
@@ -814,11 +814,9 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
           cases b with
           | inl b => 
             simp [
-              SubPom.order_char', 
               PomEquiv.trans_order_mid,
-              P.iso_left.map_rel_iff,
-              trans_src_toFun,
-              trans_src_invFun
+              trans_src_toFun_mid, 
+              P.iso_left.map_rel_iff
             ]
             apply P.iso_right.symm.map_rel_iff
           | inr b => 
@@ -831,14 +829,12 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
             cases b with
             | inl b => sorry
             | inr b => cases b with
-            | inl b => cases a with
-              | mk a Ha => cases b with 
-              | mk b Hb =>
-                rw [SubPom.order_char']
-                rw [PomEquiv.trans_order_left]
-                rw [SubPom.order_char']
-                simp
-                sorry
+            | inl b => 
+              simp [
+                trans_src_toFun_left, 
+                P.iso_left.map_rel_iff
+              ]
+              rfl
             | inr b => cases Hb
           | inr a => cases Ha
       },
