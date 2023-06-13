@@ -655,11 +655,39 @@ theorem PomEquiv.trans_order_left {L} [Ticked L] {α β γ: Pom L}
     ↔ P.left_rem.order.le a b
   := by rfl
 
+theorem PomEquiv.trans_order_left_mid {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ}
+  (a: P.left_rem.carrier) (b: β.carrier)
+  :  (P.trans_pom Q).order.le (Sum.inr (Sum.inl a)) (Sum.inl b) 
+    ↔ P.shared.order.le a.val (P.iso_right.invFun b).val
+  := by rfl
+
+theorem PomEquiv.trans_order_mid_left {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ}
+  (b: β.carrier) (a: P.left_rem.carrier)
+  :  (P.trans_pom Q).order.le (Sum.inl b) (Sum.inr (Sum.inl a))
+    ↔ P.shared.order.le (P.iso_right.invFun b).val a.val
+  := by rfl
+
 theorem PomEquiv.trans_order_right {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ}
   (a b: Q.right_rem.carrier)
   :  (P.trans_pom Q).order.le (Sum.inr (Sum.inr a)) (Sum.inr (Sum.inr b)) 
     ↔ Q.right_rem.order.le a b
+  := by rfl
+
+theorem PomEquiv.trans_order_right_mid {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ}
+  (a: Q.right_rem.carrier) (b: β.carrier)
+  :  (P.trans_pom Q).order.le (Sum.inr (Sum.inr a)) (Sum.inl b) 
+    ↔ Q.shared.order.le a.val (Q.iso_left.invFun b).val
+  := by rfl
+
+theorem PomEquiv.trans_order_mid_right {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ}
+  (b: β.carrier) (a: Q.right_rem.carrier)
+  :  (P.trans_pom Q).order.le (Sum.inl b) (Sum.inr (Sum.inr a))
+    ↔ Q.shared.order.le (Q.iso_left.invFun b).val a.val
   := by rfl
 
 def PomEquiv.trans_sub_left_pom {L} [Ticked L] {α β γ: Pom L}
@@ -814,20 +842,31 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
           cases b with
           | inl b => 
             simp [
-              PomEquiv.trans_order_mid,
               trans_src_toFun_mid, 
               P.iso_left.map_rel_iff
             ]
             apply P.iso_right.symm.map_rel_iff
           | inr b => 
             cases b with
-            | inl b => sorry
+            | inl b => 
+              simp [
+                trans_src_toFun_mid,
+                trans_src_toFun_left,
+                P.iso_left.map_rel_iff
+              ]
+              rfl
             | inr b => cases Hb
         | inr a => 
           cases a with
           | inl a => 
             cases b with
-            | inl b => sorry
+            | inl b => 
+              simp [
+                trans_src_toFun_mid,
+                trans_src_toFun_left,
+                P.iso_left.map_rel_iff
+              ]
+              rfl
             | inr b => cases b with
             | inl b => 
               simp [
