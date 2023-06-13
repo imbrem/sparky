@@ -401,6 +401,18 @@ structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
   iso_left: PomIso reduce_left α
   iso_right: PomIso reduce_right β
 
+@[simp]
+theorem PomEquiv.left_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
+  (p: (SubPom.toPom P.reduce_left.shared).carrier)
+  : P.iso_left.toRelIso.invFun (P.iso_left.toRelIso.toFun p) = p
+  := Equiv.symm_apply_apply _ p
+
+@[simp]
+theorem PomEquiv.right_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
+  (p: (SubPom.toPom P.reduce_right.shared).carrier)
+  : P.iso_right.toRelIso.invFun (P.iso_right.toRelIso.toFun p) = p
+  := Equiv.symm_apply_apply _ p
+
 def PomEquiv.refl {L} [Ticked L] (α: Pom L): PomEquiv α α := {
   shared := α,
   reduce_left := PomReduct.univ α,
@@ -745,15 +757,14 @@ def PomEquiv.trans_sub_tar_pom {L} [Ticked L] {α β γ: Pom L}
     | _ => False 
   ⟩
 
-theorem PomEquiv.left_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
-  (p: (SubPom.toPom P.reduce_left.shared).carrier)
-  : P.iso_left.toRelIso.invFun (P.iso_left.toRelIso.toFun p) = p
-  := Equiv.symm_apply_apply _ p
-
-theorem PomEquiv.right_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
-  (p: (SubPom.toPom P.reduce_right.shared).carrier)
-  : P.iso_right.toRelIso.invFun (P.iso_right.toRelIso.toFun p) = p
-  := Equiv.symm_apply_apply _ p
+def PomEquiv.trans_sub_mid_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := ⟨
+    λe => match e with
+    | Sum.inl _ => True
+    | Sum.inr _ => False
+  ⟩
 
 def PomEquiv.trans_src_toFun {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
