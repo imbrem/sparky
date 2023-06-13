@@ -1056,14 +1056,20 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
     shared := P.trans_sub_src_pom Q,
     is_reduct := {
       subset := λ_ _ => True.intro,
-      infinite_or_tick := λ⟨p, _⟩ => 
-        match p with
-        | Sum.inl p =>  sorry
-        | Sum.inr (Sum.inl p) => sorry
-        | Sum.inr (Sum.inr p) => sorry,
-      infinite_preserved := sorry,
+      infinite_or_tick := λ⟨e, _⟩ => 
+        match e with
+        | Sum.inl e => 
+          if p: (P.iso_right.invFun e).val ∈ P.reduce_left.shared.contains
+          then Or.inl p
+          else sorry --TODO: rem theorem
+        | Sum.inr (Sum.inl e) => Or.inl True.intro
+        | Sum.inr (Sum.inr e) => sorry, --TODO: rem theorem
+      infinite_preserved := λe =>
+        match e with
+        | ⟨Sum.inl e, He⟩ => sorry
+        | ⟨Sum.inr (Sum.inl e), He⟩ => sorry,
       infinite_shared := sorry,
-      empty_shared := sorry
+      empty_shared := λH => IsEmpty.mk (λ⟨e, _⟩ => H.elim ⟨e, True.intro⟩)
     }
   }
 
@@ -1074,10 +1080,20 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
     shared := P.trans_sub_tar_pom Q,
     is_reduct := {
       subset := λ_ _ => True.intro,
-      infinite_or_tick := sorry,
-      infinite_preserved := sorry,
+      infinite_or_tick := λ⟨e, _⟩ => 
+        match e with
+        | Sum.inl e => 
+          if p: (Q.iso_left.invFun e).val ∈ Q.reduce_right.shared.contains
+          then Or.inl p
+          else sorry --TODO: rem theorem
+        | Sum.inr (Sum.inl e) => sorry --TODO: rem theorem
+        | Sum.inr (Sum.inr e) => Or.inl True.intro,
+      infinite_preserved := λe =>
+        match e with
+        | ⟨Sum.inl e, He⟩ => sorry
+        | ⟨Sum.inr (Sum.inr e), He⟩ => sorry,
       infinite_shared := sorry,
-      empty_shared := sorry
+      empty_shared := λH => IsEmpty.mk (λ⟨e, _⟩ => H.elim ⟨e, True.intro⟩)
     }
   }
 
