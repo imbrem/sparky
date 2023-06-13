@@ -272,7 +272,25 @@ structure SubPomReduces {L} [Ticked L] {α: Pom L} (ρ σ: SubPom α): Prop :=
   infinite_preserved: ∀p: σ.carrier,
     Infinite (ρ.pred ⟨p.val, subset p.property⟩) -> Infinite (σ.pred p)
   infinite_shared: Infinite ρ -> Infinite σ
-  empty_shared: IsEmpty ρ -> IsEmpty σ  
+  empty_shared: IsEmpty σ -> IsEmpty ρ  
+
+def SubPomReduces.infinite_shared' {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
+  (S: SubPomReduces ρ σ)
+  : Infinite ρ ↔ Infinite σ
+  := ⟨
+    S.infinite_shared, 
+    λH => @Infinite.of_injective _ _ H
+      (λ⟨e, H⟩ => ⟨e, S.subset H⟩)
+      λ{a b} H => by cases a; cases b; cases H; rfl
+  ⟩
+
+def SubPomReduces.empty_shared' {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
+  (S: SubPomReduces ρ σ)
+  : IsEmpty ρ ↔ IsEmpty σ
+  := ⟨
+    λH => IsEmpty.mk (λ⟨e, He⟩ => H.elim ⟨e, (S.subset He)⟩), 
+    S.empty_shared
+  ⟩
 
 def PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α) := SubPomReduces (SubPom.univ α) ρ
 
@@ -310,7 +328,7 @@ theorem SubPomReduces.trans {L} [Ticked L] {α: Pom L} {ρ σ τ: SubPom α}
     infinite_preserved := λe => 
       Hστ.infinite_preserved e ∘ Hρσ.infinite_preserved ⟨e.val, Hστ.subset e.property⟩,
     infinite_shared := Hστ.infinite_shared ∘ Hρσ.infinite_shared,
-    empty_shared := Hστ.empty_shared ∘ Hρσ.empty_shared,
+    empty_shared := Hρσ.empty_shared ∘ Hστ.empty_shared,
   }
 
 theorem SubPomReduces.antisymm {L} [Ticked L] 
@@ -1088,6 +1106,24 @@ def PomEquiv.trans_sub_mid_iso {L} [Ticked L] {α β γ: Pom L}
       action_eq := λ{e} => match e with | ⟨Sum.inl e, _⟩ => rfl 
   }
 
+def PomEquiv.trans_sub_mid {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomReduct (P.trans_pom Q)
+  := {
+    shared := P.trans_sub_mid_pom Q,
+    is_reduct := {
+      subset := λ_ _ => True.intro,
+      infinite_or_tick := λ⟨e, _⟩ =>
+        match e with
+        | Sum.inl e => Or.inl True.intro
+        | Sum.inr (Sum.inl e) => sorry --TODO: rem theorem
+        | Sum.inr (Sum.inr e) => sorry --TODO: rem theorem
+      infinite_preserved := sorry
+      infinite_shared := sorry
+      empty_shared := sorry
+    },
+  }
+
 def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomReduct (P.trans_pom Q)
@@ -1114,7 +1150,7 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
         | ⟨Sum.inr (Sum.inl e), He⟩ => sorry,
       infinite_shared := 
         λH => sorry,
-      empty_shared := λH => IsEmpty.mk (λ⟨e, _⟩ => H.elim ⟨e, True.intro⟩)
+      empty_shared := λH => sorry
     }
   }
 
@@ -1138,7 +1174,7 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
         | ⟨Sum.inl e, He⟩ => sorry
         | ⟨Sum.inr (Sum.inr e), He⟩ => sorry,
       infinite_shared := sorry,
-      empty_shared := λH => IsEmpty.mk (λ⟨e, _⟩ => H.elim ⟨e, True.intro⟩)
+      empty_shared := λH => sorry
     }
   }
 
