@@ -834,49 +834,35 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
       invFun := P.trans_src_invFun Q,
       left_inv := P.trans_src_left_inv Q,
       right_inv := P.trans_right_inv Q,
-      map_rel_iff' := by {
-        intro ⟨a, Ha⟩;
-        intro ⟨b, Hb⟩;
-        cases a with
-        | inl a => 
-          cases b with
-          | inl b => 
+      map_rel_iff' := λ{a b} =>
+        match a, b with
+        | ⟨Sum.inl _, _⟩, ⟨Sum.inl _, _⟩ => by
             simp [
               trans_src_toFun_mid, 
               P.iso_left.map_rel_iff
             ]
             apply P.iso_right.symm.map_rel_iff
-          | inr b => 
-            cases b with
-            | inl b => 
-              simp [
-                trans_src_toFun_mid,
-                trans_src_toFun_left,
-                P.iso_left.map_rel_iff
-              ]
-              rfl
-            | inr b => cases Hb
-        | inr a => 
-          cases a with
-          | inl a => 
-            cases b with
-            | inl b => 
-              simp [
-                trans_src_toFun_mid,
-                trans_src_toFun_left,
-                P.iso_left.map_rel_iff
-              ]
-              rfl
-            | inr b => cases b with
-            | inl b => 
-              simp [
-                trans_src_toFun_left, 
-                P.iso_left.map_rel_iff
-              ]
-              rfl
-            | inr b => cases Hb
-          | inr a => cases Ha
-      },
+        | ⟨Sum.inl _, _⟩, ⟨Sum.inr (Sum.inl _), _⟩ => by
+            simp [
+              trans_src_toFun_mid,
+              trans_src_toFun_left,
+              P.iso_left.map_rel_iff
+            ]
+            rfl
+        | ⟨Sum.inr (Sum.inl _), _⟩, ⟨Sum.inl _, _⟩ => by
+            simp [
+              trans_src_toFun_mid,
+              trans_src_toFun_left,
+              P.iso_left.map_rel_iff
+            ]
+            rfl
+        | ⟨Sum.inr (Sum.inl _), _⟩, ⟨Sum.inr (Sum.inl _), _⟩ => by
+          simp [
+            trans_src_toFun_left, 
+            P.iso_left.map_rel_iff
+          ]
+          rfl
+      ,
       action_eq := sorry
     }
 
