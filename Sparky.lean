@@ -41,6 +41,15 @@ protected def PomIso.symm {L} {α β: Pom L} (φ: PomIso α β): PomIso β α :=
   action_eq := λ{_} => by simp [φ.action_eq]
 }
 
+theorem PomIso.infinite_iff {L} {α β: Pom L} (φ: PomIso α β): Infinite α ↔ Infinite β
+  := φ.toEquiv.infinite_iff
+
+theorem PomIso.empty_iff {L} {α β: Pom L} (φ: PomIso α β): IsEmpty α ↔ IsEmpty β
+  := ⟨
+    λH => IsEmpty.mk (λe => H.elim (φ.invFun e)),
+    λH => IsEmpty.mk (λe => H.elim (φ.toFun e))
+  ⟩
+
 def PomIso.symm_toRelIso {L} {α β: Pom L} (φ: PomIso α β): φ.symm.toRelIso = φ.toRelIso.symm 
   := rfl
 def PomIso.symm_toEquiv {L} {α β: Pom L} (φ: PomIso α β): φ.symm.toEquiv = φ.toEquiv.symm 
@@ -274,7 +283,7 @@ structure SubPomReduces {L} [Ticked L] {α: Pom L} (ρ σ: SubPom α): Prop :=
   infinite_shared: Infinite ρ -> Infinite σ
   empty_shared: IsEmpty σ -> IsEmpty ρ  
 
-def SubPomReduces.infinite_shared' {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
+def SubPomReduces.infinite_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
   (S: SubPomReduces ρ σ)
   : Infinite ρ ↔ Infinite σ
   := ⟨
@@ -284,7 +293,7 @@ def SubPomReduces.infinite_shared' {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
       λ{a b} H => by cases a; cases b; cases H; rfl
   ⟩
 
-def SubPomReduces.empty_shared' {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
+def SubPomReduces.empty_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
   (S: SubPomReduces ρ σ)
   : IsEmpty ρ ↔ IsEmpty σ
   := ⟨
@@ -293,6 +302,24 @@ def SubPomReduces.empty_shared' {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
   ⟩
 
 def PomReduces {L} [Ticked L] {α: Pom L} (ρ: SubPom α) := SubPomReduces (SubPom.univ α) ρ
+
+def PomReduces.infinite_iff' {L} [Ticked L] {α: Pom L} {ρ: SubPom α}
+  (P: PomReduces ρ)
+  : Infinite ρ ↔ Infinite α
+  := by 
+    rw [
+      <-@Set.infinite_univ_iff α, 
+      <-Set.infinite_coe_iff,
+      <-P.infinite_iff
+    ]; rfl
+
+def PomReduces.empty_iff' {L} [Ticked L] {α: Pom L} {ρ: SubPom α}
+  (P: PomReduces ρ)
+  : IsEmpty ρ ↔ IsEmpty α
+  := ⟨
+    λH => IsEmpty.mk (λe => (P.empty_shared H).elim ⟨e, True.intro⟩),
+    λH => IsEmpty.mk (λe => H.elim e.val)
+  ⟩
 
 theorem SubPomReduces.refl {L} [Ticked L] {α: Pom L} (ρ: SubPom α):
   SubPomReduces ρ ρ
@@ -418,6 +445,48 @@ structure PomEquiv {L} [Ticked L] (α β: Pom L) :=
   reduce_right: PomReduct shared
   iso_left: PomIso reduce_left α
   iso_right: PomIso reduce_right β
+
+theorem PomEquiv.infinite_shared_left {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : Infinite P.shared ↔ Infinite α
+  := by rw [
+    <-P.reduce_left.is_reduct.infinite_iff',
+    P.iso_left.infinite_iff
+  ]
+
+theorem PomEquiv.infinite_shared_right {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : Infinite P.shared ↔ Infinite β
+  := by rw [
+    <-P.reduce_right.is_reduct.infinite_iff',
+    P.iso_right.infinite_iff
+  ]
+
+theorem PomEquiv.infinite_iff {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : Infinite α ↔ Infinite β
+  := by rw [<-P.infinite_shared_left, <-P.infinite_shared_right]
+
+theorem PomEquiv.empty_shared_left {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : IsEmpty P.shared ↔ IsEmpty α
+  := by rw [
+    <-P.reduce_left.is_reduct.empty_iff',
+    P.iso_left.empty_iff
+  ]
+
+theorem PomEquiv.empty_shared_right {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : IsEmpty P.shared ↔ IsEmpty β
+  := by rw [
+    <-P.reduce_right.is_reduct.empty_iff',
+    P.iso_right.empty_iff
+  ]
+
+theorem PomEquiv.empty_iff {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : IsEmpty α ↔ IsEmpty β
+  := by rw [<-P.empty_shared_left, <-P.empty_shared_right]
 
 @[simp]
 theorem PomEquiv.left_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
