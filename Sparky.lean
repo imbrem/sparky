@@ -23,17 +23,20 @@ instance {L}: CoeOut (Pom L) (Type) := {
 structure PomIso {L} (α β: Pom L) extends RelIso α.order.le β.order.le :=
   action_eq: ∀{e: α.carrier}, α.action e = β.action (toFun e)
 
-def PomIso.refl {L} (α: Pom L): PomIso α α := {
+@[refl]
+protected def PomIso.refl {L} (α: Pom L): PomIso α α := {
   toRelIso := RelIso.refl _,
   action_eq := rfl
 }
 
-def PomIso.trans {L} {α β γ: Pom L} (φ: PomIso α β) (ψ: PomIso β γ): PomIso α γ := {
+@[trans]
+protected def PomIso.trans {L} {α β γ: Pom L} (φ: PomIso α β) (ψ: PomIso β γ): PomIso α γ := {
   toRelIso := RelIso.trans φ.toRelIso ψ.toRelIso,
   action_eq := λ{_} => by rw [φ.action_eq, ψ.action_eq]; rfl
 }
 
-def PomIso.symm {L} {α β: Pom L} (φ: PomIso α β): PomIso β α := {
+@[symm]
+protected def PomIso.symm {L} {α β: Pom L} (φ: PomIso α β): PomIso β α := {
   toRelIso := RelIso.symm φ.toRelIso,
   action_eq := λ{_} => by simp [φ.action_eq]
 }
@@ -880,10 +883,11 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
           simp only [
             trans_pom, trans_action,
             SubPom.toPom, SubPom.action,
-            P.iso_left.symm.action_eq
+            P.iso_left.symm.action_eq,
+            PomIso.symm
           ]
           rw [trans_src_toFun_left]
-          sorry
+          simp
     }
 
 noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
