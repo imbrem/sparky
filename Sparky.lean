@@ -1074,6 +1074,20 @@ noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
           simp
     }
 
+def PomEquiv.trans_sub_mid_iso {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : PomIso (P.trans_sub_mid_pom Q) β
+  := {
+      toFun := λe => match e with | ⟨Sum.inl e, _⟩ => e,
+      invFun := λe => ⟨Sum.inl e, True.intro⟩,
+      left_inv := λe => match e with | ⟨Sum.inl e, _⟩ => rfl,
+      right_inv := λ_ => rfl,
+      map_rel_iff' := λ{a b} =>
+        match a, b with
+        | ⟨Sum.inl a, _⟩, ⟨Sum.inl b, _⟩ => by rfl,
+      action_eq := λ{e} => match e with | ⟨Sum.inl e, _⟩ => rfl 
+  }
+
 def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomReduct (P.trans_pom Q)
