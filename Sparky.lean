@@ -423,6 +423,20 @@ def PomEquiv.left_rem {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): SubPom 
 def PomEquiv.right_rem {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): SubPom P.shared
   := (P.reduce_right.shared.deletion P.reduce_left.shared)
 
+def PomEquiv.left_rem_char {L} [Ticked L] {α β: Pom L} 
+  (P: PomEquiv α β) (p: P.shared.carrier) (Hp: p ∉ P.reduce_right.shared.contains)
+  : Infinite ((SubPom.univ P.shared).pred ⟨p, True.intro⟩) ∨ P.shared.action p = Ticked.δ
+  := match P.reduce_right.is_reduct.infinite_or_tick ⟨p, True.intro⟩ with
+  | Or.inl H => (Hp H).elim
+  | Or.inr H => H
+
+def PomEquiv.right_rem_char {L} [Ticked L] {α β: Pom L} 
+  (P: PomEquiv α β) (p: P.shared.carrier) (Hp: p ∉ P.reduce_left.shared.contains)
+  : Infinite ((SubPom.univ P.shared).pred ⟨p, True.intro⟩) ∨ P.shared.action p = Ticked.δ
+  := match P.reduce_left.is_reduct.infinite_or_tick ⟨p, True.intro⟩ with
+  | Or.inl H => (Hp H).elim
+  | Or.inr H => H
+
 def PomEquiv.trans_carrier {L} [Ticked L] {α β γ: Pom L} 
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : Type
@@ -1061,14 +1075,20 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
         | Sum.inl e => 
           if p: (P.iso_right.invFun e).val ∈ P.reduce_left.shared.contains
           then Or.inl p
-          else sorry --TODO: rem theorem
+          else match P.right_rem_char _ p with
+          | Or.inl p => Or.inr (Or.inl sorry)
+          | Or.inr p => Or.inr (Or.inr sorry)
         | Sum.inr (Sum.inl e) => Or.inl True.intro
-        | Sum.inr (Sum.inr e) => sorry, --TODO: rem theorem
+        | Sum.inr (Sum.inr ⟨e, p⟩) =>
+          match Q.right_rem_char _ p.right with
+          | Or.inl p => Or.inr (Or.inl sorry)
+          | Or.inr p => Or.inr (Or.inr sorry) 
       infinite_preserved := λe =>
         match e with
         | ⟨Sum.inl e, He⟩ => sorry
         | ⟨Sum.inr (Sum.inl e), He⟩ => sorry,
-      infinite_shared := sorry,
+      infinite_shared := 
+        λH => sorry,
       empty_shared := λH => IsEmpty.mk (λ⟨e, _⟩ => H.elim ⟨e, True.intro⟩)
     }
   }
