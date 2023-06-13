@@ -736,6 +736,11 @@ theorem PomEquiv.left_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
   : P.iso_left.toRelIso.invFun (P.iso_left.toRelIso.toFun p) = p
   := Equiv.symm_apply_apply _ p
 
+theorem PomEquiv.right_iso_self {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β)
+  (p: (SubPom.toPom P.reduce_right.shared).carrier)
+  : P.iso_right.toRelIso.invFun (P.iso_right.toRelIso.toFun p) = p
+  := Equiv.symm_apply_apply _ p
+
 def PomEquiv.trans_src_toFun {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   (e: (P.trans_sub_src_pom Q).carrier): α.carrier
@@ -799,7 +804,7 @@ theorem PomEquiv.trans_src_left_inv [Ticked L] {α β γ: Pom L}
       case inr H => simp
     }
 
-theorem PomEquiv.trans_right_inv [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_src_right_inv [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : Function.RightInverse (P.trans_src_invFun Q) (P.trans_src_toFun Q)
   := λe => by {
@@ -836,7 +841,7 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
       toFun := P.trans_src_toFun Q,
       invFun := P.trans_src_invFun Q,
       left_inv := P.trans_src_left_inv Q,
-      right_inv := P.trans_right_inv Q,
+      right_inv := P.trans_src_right_inv Q,
       map_rel_iff' := λ{a b} =>
         match a, b with
         | ⟨Sum.inl _, _⟩, ⟨Sum.inl _, _⟩ => by
@@ -890,16 +895,158 @@ noncomputable def PomEquiv.trans_sub_src_iso {L} [Ticked L] {α β γ: Pom L}
           simp
     }
 
+def PomEquiv.trans_tar_toFun {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (e: (P.trans_sub_tar_pom Q).carrier): γ.carrier
+  := match e with
+      | ⟨Sum.inl e, p⟩ => 
+        Q.iso_right.toFun ⟨(Q.iso_left.invFun e).val, p⟩ 
+      | ⟨Sum.inr (Sum.inl _), p⟩ => match p with.
+      | ⟨Sum.inr (Sum.inr e), _⟩ => 
+        Q.iso_right.toFun ⟨e.val, e.property.left⟩ 
+
+theorem PomEquiv.trans_tar_toFun_mid {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e: β.carrier) (p)
+  : P.trans_tar_toFun Q ⟨Sum.inl e, p⟩  = Q.iso_right.toFun ⟨(Q.iso_left.invFun e).val, p⟩ 
+  := rfl
+
+theorem PomEquiv.trans_tar_toFun_right {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e: Q.right_rem.carrier) (p)
+  : P.trans_tar_toFun Q ⟨Sum.inr (Sum.inr e), p⟩ = Q.iso_right.toFun ⟨e.val, e.property.left⟩ 
+  := rfl
+
+noncomputable def PomEquiv.trans_tar_invFun {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (e: γ.carrier): (P.trans_sub_tar_pom Q).carrier
+  := let ⟨e, He⟩ := Q.iso_right.invFun e;
+        if p: e ∈ Q.reduce_left.shared.contains
+        then 
+          ⟨Sum.inl (Q.iso_left.toFun ⟨e, p⟩), by {
+            simp [
+              trans_sub_tar_pom, 
+              Membership.mem, 
+              Set.Mem
+            ]
+            exact (RelIso.symm_apply_apply Q.iso_left.toRelIso ⟨e, p⟩).symm ▸ He
+          }⟩
+        else 
+          ⟨Sum.inr (Sum.inr ⟨e, He, p⟩), True.intro⟩
+
+theorem PomEquiv.trans_tar_left_inv [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Function.LeftInverse (P.trans_tar_invFun Q) (P.trans_tar_toFun Q)
+  := λ⟨e, _⟩ => match e with
+    | Sum.inl e => by {
+      rw [trans_tar_toFun, trans_tar_invFun]
+      simp only []
+      rw [Q.right_iso_self]
+      simp only []
+      split
+      case inl H => simp
+      case inr H' => 
+        apply False.elim;
+        apply H';
+        simp
+    }
+    | Sum.inr (Sum.inr ⟨e, He, Hr⟩) => by {
+      rw [trans_tar_toFun, trans_tar_invFun]
+      simp only []
+      rw [Q.right_iso_self]
+      simp only []
+      split
+      case inl H => exact (Hr H).elim
+      case inr H => simp
+    }
+
+theorem PomEquiv.trans_tar_right_inv [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Function.RightInverse (P.trans_tar_invFun Q) (P.trans_tar_toFun Q)
+  := λe => by {
+        rw [trans_tar_toFun, trans_tar_invFun]
+        simp only [Equiv.invFun_as_coe, Equiv.toFun_as_coe]
+        generalize He: Q.iso_right.toEquiv.symm e = e';
+        cases e' with
+        | mk e' He' =>
+          simp only []
+          let Pr := e' ∈ Q.reduce_left.shared.contains;
+          cases Classical.em Pr with
+          | inl H =>
+            simp only [H]
+            apply Q.iso_right.symm.injective;
+            rw [<-RelIso.coe_toEquiv]
+            rw [PomIso.symm_toEquiv]
+            rw [He]
+            rw [Q.iso_right.left_inv']
+            apply Subtype.eq
+            simp only []
+            rw [Q.iso_left.left_inv']
+          | inr H => 
+            simp [
+              H, <-He, 
+              <-PomIso.symm_toEquiv,
+              PomIso.symm_toRelIso
+            ]
+      }
+
 noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomIso (P.trans_sub_tar_pom Q) γ
   := {
-      toFun := sorry,
-      invFun := sorry,
-      left_inv := sorry,
-      right_inv := sorry,
-      map_rel_iff' := sorry,
-      action_eq := sorry
+      toFun := P.trans_tar_toFun Q,
+      invFun := P.trans_tar_invFun Q,
+      left_inv := P.trans_tar_left_inv Q,
+      right_inv := P.trans_tar_right_inv Q,
+      map_rel_iff' := λ{a b} =>
+        match a, b with
+        | ⟨Sum.inl _, _⟩, ⟨Sum.inl _, _⟩ => by
+            simp [
+              trans_tar_toFun_mid, 
+              Q.iso_right.map_rel_iff
+            ]
+            apply Q.iso_left.symm.map_rel_iff
+        | ⟨Sum.inl _, _⟩, ⟨Sum.inr (Sum.inr _), _⟩ => by
+            simp [
+              trans_tar_toFun_mid,
+              trans_tar_toFun_right,
+              Q.iso_right.map_rel_iff
+            ]
+            rfl
+        | ⟨Sum.inr (Sum.inr _), _⟩, ⟨Sum.inl _, _⟩ => by
+            simp [
+              trans_tar_toFun_mid,
+              trans_tar_toFun_right,
+              Q.iso_right.map_rel_iff
+            ]
+            rfl
+        | ⟨Sum.inr (Sum.inr _), _⟩, ⟨Sum.inr (Sum.inr _), _⟩ => by
+          simp [
+            trans_tar_toFun_right, 
+            Q.iso_right.map_rel_iff
+          ]
+          rfl
+      ,
+      action_eq := λ{a} =>
+        match a with
+        | ⟨Sum.inl a, Ha⟩ => by
+          simp only [
+            trans_pom, trans_action,
+            SubPom.toPom, SubPom.action,
+            Q.iso_left.symm.action_eq,
+            Q.iso_right.symm.action_eq,
+            PomIso.symm
+          ]
+          rw [trans_tar_toFun_mid]
+          simp
+          rfl
+        | ⟨Sum.inr (Sum.inr a), Ha⟩ => by
+          simp only [
+            trans_pom, trans_action,
+            SubPom.toPom, SubPom.action,
+            Q.iso_right.symm.action_eq,
+            PomIso.symm
+          ]
+          rw [trans_tar_toFun_right]
+          simp
     }
 
 def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
