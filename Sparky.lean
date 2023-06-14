@@ -289,7 +289,7 @@ def SubPom.pred_iso {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier)
 
 def PomIso.pred_sub {L} {α: Pom L} {ρ σ: SubPom α} (φ: PomIso ρ.toPom σ.toPom) 
   (p: ρ.carrier):
-  PomIso (ρ.pred p) (σ.pred (φ.toFun p)).toPom
+  PomIso (ρ.pred p).toPom (σ.pred (φ.toFun p)).toPom
   := PomIso.trans (ρ.pred_iso _).symm (PomIso.trans (φ.pred _) (σ.pred_iso _))
 
 -- def PomIso.pred_inv {L} {α β: Pom L} (φ: PomIso α β) (p: β.carrier):
