@@ -276,6 +276,17 @@ def PomIso.pred_empty_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
   IsEmpty (α.pred p) ↔ IsEmpty (β.pred (φ.toFun p))
   := (φ.pred p).empty_iff
 
+def SubPom.pred_iso {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier)
+  : PomIso (ρ.toPom.pred p) (ρ.pred p).toPom
+  := {
+    toFun := λ⟨e, He⟩ => ⟨e.val, ⟨e.property, He⟩⟩,
+    invFun := λ⟨e, He⟩ => ⟨⟨e, He.left⟩, He.right⟩,
+    left_inv := λ⟨⟨_, _⟩, _⟩ => rfl,
+    right_inv := λ⟨_, _, _⟩ => rfl,
+    map_rel_iff' := λ{a b} => by rfl,
+    action_eq := λ{a} => rfl 
+  }
+
 def PomIso.pred_inv {L} {α β: Pom L} (φ: PomIso α β) (p: β.carrier):
   PomIso (α.pred (φ.invFun p)) (β.pred p).toPom
   := sorry
