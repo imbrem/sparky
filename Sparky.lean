@@ -828,10 +828,15 @@ def PomEquiv.trans_pom {L} [Ticked L] {α β γ: Pom L}
     action := trans_action
   }
 
-def PomEquiv.trans_pom_left_right_infinite {L} [Ticked L] {α β γ: Pom L}
+def PomEquiv.trans_left_right_infinite {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : Infinite α ↔ Infinite γ
   := Iff.trans P.infinite_iff Q.infinite_iff
+
+def PomEquiv.trans_left_right_empty {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : IsEmpty α ↔ IsEmpty γ
+  := Iff.trans P.empty_iff Q.empty_iff
 
 def PomEquiv.trans_pom_mid_infinite {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
@@ -849,6 +854,23 @@ def PomEquiv.trans_pom_mid_infinite {L} [Ticked L] {α β γ: Pom L}
     λ_ => Sum.infinite_of_left
   ⟩
 
+def PomEquiv.trans_pom_mid_empty {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : IsEmpty (P.trans_pom Q) ↔ IsEmpty β
+  := ⟨
+    λH => IsEmpty.mk (λb => H.elim (Sum.inl b)),
+    λH => isEmpty_sum.mpr ⟨H, isEmpty_sum.mpr ⟨
+      @instIsEmptySubtype _ (
+        P.reduce_right.is_reduct.empty_iff'.mp 
+        (P.iso_right.empty_iff.mpr H)
+      ) _, 
+      @instIsEmptySubtype _ (
+        Q.reduce_left.is_reduct.empty_iff'.mp 
+        (Q.iso_left.empty_iff.mpr H)
+      ) _
+    ⟩⟩
+  ⟩
+
 def PomEquiv.trans_pom_left_infinite {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : Infinite (P.trans_pom Q) ↔ Infinite α
@@ -858,6 +880,16 @@ def PomEquiv.trans_pom_right_infinite {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : Infinite (P.trans_pom Q) ↔ Infinite γ
   := Iff.trans (P.trans_pom_mid_infinite Q) Q.infinite_iff
+
+def PomEquiv.trans_pom_left_empty {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : IsEmpty (P.trans_pom Q) ↔ IsEmpty α
+  := Iff.trans (P.trans_pom_mid_empty Q) P.empty_iff.symm
+
+def PomEquiv.trans_pom_right_empty {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : IsEmpty (P.trans_pom Q) ↔ IsEmpty γ
+  := Iff.trans (P.trans_pom_mid_empty Q) Q.empty_iff
 
 theorem PomEquiv.trans_order_mid {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ}
@@ -1324,7 +1356,12 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
           ((P.trans_pom_left_infinite Q).mp (
             (SubPom.iso_univ _).infinite_iff.mp H
           )),
-      empty_shared := λH => sorry
+      empty_shared := λH => 
+        (SubPom.iso_univ _).empty_iff.mpr (
+          (P.trans_pom_left_empty Q).mpr (
+            (P.trans_sub_src_iso Q).empty_iff.mp H
+          )
+        )
     }
   }
 
@@ -1352,7 +1389,12 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
           ((P.trans_pom_right_infinite Q).mp (
             (SubPom.iso_univ _).infinite_iff.mp H
           )),
-      empty_shared := λH => sorry
+      empty_shared := λH => 
+        (SubPom.iso_univ _).empty_iff.mpr (
+          (P.trans_pom_right_empty Q).mpr (
+            (P.trans_sub_tar_iso Q).empty_iff.mp H
+          )
+        )
     }
   }
 
