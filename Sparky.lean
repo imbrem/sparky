@@ -522,10 +522,20 @@ theorem PomEquiv.infinite_shared_right {L} [Ticked L] {α β: Pom L}
     P.iso_right.infinite_iff
   ]
 
+theorem PomEquiv.infinite_shared_left' {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : Infinite (SubPom.univ P.shared) ↔ Infinite α
+  := Iff.trans (SubPom.iso_univ P.shared).infinite_iff P.infinite_shared_left
+
+theorem PomEquiv.infinite_shared_right' {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β)
+  : Infinite (SubPom.univ P.shared) ↔ Infinite β
+  := Iff.trans (SubPom.iso_univ P.shared).infinite_iff P.infinite_shared_right
+
 theorem PomEquiv.infinite_iff {L} [Ticked L] {α β: Pom L}
   (P: PomEquiv α β)
   : Infinite α ↔ Infinite β
-  := by rw [<-P.infinite_shared_left, <-P.infinite_shared_right]
+  := Iff.trans P.infinite_shared_left.symm P.infinite_shared_right
 
 theorem PomEquiv.empty_shared_left {L} [Ticked L] {α β: Pom L}
   (P: PomEquiv α β)
@@ -817,6 +827,37 @@ def PomEquiv.trans_pom {L} [Ticked L] {α β γ: Pom L}
     order := P.trans_order Q,
     action := trans_action
   }
+
+def PomEquiv.trans_pom_left_right_infinite {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Infinite α ↔ Infinite γ
+  := Iff.trans P.infinite_iff Q.infinite_iff
+
+def PomEquiv.trans_pom_mid_infinite {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Infinite (P.trans_pom Q) ↔ Infinite β
+  := ⟨
+    λH => match infinite_sum.mp H with
+    | Or.inl H => H
+    | Or.inr H => match infinite_sum.mp H with
+      | Or.inl H => P.infinite_shared_right.mp 
+        (@Infinite.of_injective _ _ H (λp => p.val) 
+          (λ⟨_, _⟩ ⟨_, _⟩ H => by cases H; rfl))
+      | Or.inr H => Q.infinite_shared_left.mp 
+        (@Infinite.of_injective _ _ H (λp => p.val) 
+          (λ⟨_, _⟩ ⟨_, _⟩ H => by cases H; rfl)),
+    λ_ => Sum.infinite_of_left
+  ⟩
+
+def PomEquiv.trans_pom_left_infinite {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Infinite (P.trans_pom Q) ↔ Infinite α
+  := Iff.trans (P.trans_pom_mid_infinite Q) P.infinite_iff.symm
+
+def PomEquiv.trans_pom_right_infinite {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : Infinite (P.trans_pom Q) ↔ Infinite γ
+  := Iff.trans (P.trans_pom_mid_infinite Q) Q.infinite_iff
 
 theorem PomEquiv.trans_order_mid {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ}
@@ -1278,7 +1319,11 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
         | ⟨Sum.inl e, He⟩ => sorry
         | ⟨Sum.inr (Sum.inl e), He⟩ => sorry,
       infinite_shared := 
-        λH => sorry,
+        λH => 
+          (P.trans_sub_src_iso Q).infinite_iff.mpr 
+          ((P.trans_pom_left_infinite Q).mp (
+            (SubPom.iso_univ _).infinite_iff.mp H
+          )),
       empty_shared := λH => sorry
     }
   }
