@@ -1347,7 +1347,11 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
         match e with
         | ⟨Sum.inl e, He⟩ => sorry
         | ⟨Sum.inr (Sum.inr e), He⟩ => sorry,
-      infinite_shared := sorry,
+      infinite_shared := λH => 
+          (P.trans_sub_tar_iso Q).infinite_iff.mpr 
+          ((P.trans_pom_right_infinite Q).mp (
+            (SubPom.iso_univ _).infinite_iff.mp H
+          )),
       empty_shared := λH => sorry
     }
   }
