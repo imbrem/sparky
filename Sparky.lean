@@ -268,16 +268,16 @@ def PomIso.pred {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
     action_eq := λ{a} => by cases a; exact φ.action_eq
   }
 
-def PomIso.pred_infinite_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
+theorem PomIso.pred_infinite_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
   Infinite (α.pred p) ↔ Infinite (β.pred (φ.toFun p))
   := (φ.pred p).infinite_iff
 
-def PomIso.pred_empty_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
+theorem PomIso.pred_empty_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
   IsEmpty (α.pred p) ↔ IsEmpty (β.pred (φ.toFun p))
   := (φ.pred p).empty_iff
 
 def SubPom.pred_iso {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier)
-  : PomIso (ρ.toPom.pred p) (ρ.pred p).toPom
+  : PomIso (ρ.toPom.pred p).toPom (ρ.pred p).toPom
   := {
     toFun := λ⟨e, He⟩ => ⟨e.val, ⟨e.property, He⟩⟩,
     invFun := λ⟨e, He⟩ => ⟨⟨e, He.left⟩, He.right⟩,
@@ -287,10 +287,20 @@ def SubPom.pred_iso {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier)
     action_eq := λ{a} => rfl 
   }
 
-def PomIso.pred_sub {L} {α: Pom L} {ρ σ: SubPom α} (φ: PomIso ρ.toPom σ.toPom) 
-  (p: ρ.carrier):
+def PomIso.pred_sub {L} {α: Pom L} {ρ σ: SubPom α} 
+  (φ: PomIso ρ.toPom σ.toPom) (p: ρ.carrier):
   PomIso (ρ.pred p).toPom (σ.pred (φ.toFun p)).toPom
   := PomIso.trans (ρ.pred_iso _).symm (PomIso.trans (φ.pred _) (σ.pred_iso _))
+
+theorem PomIso.pred_sub_infinite_iff {L} {α: Pom L} {ρ σ: SubPom α} 
+  (φ: PomIso ρ.toPom σ.toPom) (p: ρ.carrier):
+  Infinite (ρ.pred p) ↔ Infinite (σ.pred (φ.toFun p))
+  := (φ.pred_sub p).infinite_iff
+
+theorem PomIso.pred_sub_empty_iff {L} {α: Pom L} {ρ σ: SubPom α} 
+  (φ: PomIso ρ.toPom σ.toPom) (p: ρ.carrier):
+  IsEmpty (ρ.pred p) ↔ IsEmpty (σ.pred (φ.toFun p))
+  := (φ.pred_sub p).empty_iff
 
 -- def PomIso.pred_inv {L} {α β: Pom L} (φ: PomIso α β) (p: β.carrier):
 --   PomIso (α.pred (φ.invFun p)) (β.pred p).toPom
