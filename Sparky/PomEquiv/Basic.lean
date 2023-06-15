@@ -109,3 +109,17 @@ def PomEquiv.right_rem_char {L} [Ticked L] {α β: Pom L}
   := match P.reduce_left.is_reduct.infinite_or_tick ⟨p, True.intro⟩ with
   | Or.inl H => (Hp H).elim
   | Or.inr H => H
+
+def PomEquiv.left_action_eq {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β) (e: α.carrier)
+  : P.shared.action (P.iso_left.invFun e).val = α.action e
+  := by
+    simp [P.iso_left.symm.action_eq]
+    rfl
+
+def PomEquiv.right_action_eq {L} [Ticked L] {α β: Pom L}
+  (P: PomEquiv α β) (e: β.carrier)
+  : P.shared.action (P.iso_right.invFun e).val = β.action e
+  := by
+    simp [P.iso_right.symm.action_eq]
+    rfl

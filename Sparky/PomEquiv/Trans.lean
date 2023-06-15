@@ -254,6 +254,14 @@ def PomEquiv.trans_pom_mid_infinite {L} [Ticked L] {α β γ: Pom L}
     λ_ => Sum.infinite_of_left
   ⟩
 
+def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
+  := ⟨
+    λH => sorry,
+    λH => sorry
+  ⟩
+
 def PomEquiv.trans_pom_mid_empty {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : IsEmpty (P.trans_pom Q) ↔ IsEmpty β
@@ -739,13 +747,26 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
           if p: (P.iso_right.invFun e).val ∈ P.reduce_left.shared.contains
           then Or.inl p
           else match P.right_rem_char _ p with
-          | Or.inl p => Or.inr (Or.inl sorry)
-          | Or.inr p => Or.inr (Or.inr sorry)
+          | Or.inl p => Or.inr (Or.inl (
+            have p := P.reduce_right.is_reduct.infinite_preserved _ p;
+            have p := (SubPom.pred_iso _ _).infinite_iff.mpr p;
+            have p := (P.iso_right.pred _).infinite_iff.mp p;
+            @Infinite.of_injective _ _ p 
+              (λ⟨e', He'⟩ => ⟨
+                Sum.inl e', 
+                ⟨True.intro, by {
+                  simp at He';
+                  exact He'
+                }⟩
+              ⟩) 
+              (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
+          ))
+          | Or.inr p => Or.inr (Or.inr ((P.right_action_eq _) ▸ p))
         | Sum.inr (Sum.inl e) => Or.inl True.intro
         | Sum.inr (Sum.inr ⟨e, p⟩) =>
           match Q.right_rem_char _ p.right with
           | Or.inl p => Or.inr (Or.inl sorry)
-          | Or.inr p => Or.inr (Or.inr sorry) 
+          | Or.inr p => Or.inr (Or.inr sorry)
       infinite_preserved := λe =>
         match e with
         | ⟨Sum.inl e, He⟩ => sorry

@@ -150,9 +150,15 @@ theorem PomIso.pred_sub_empty_iff {L} {α: Pom L} {ρ σ: SubPom α}
   IsEmpty (ρ.pred p) ↔ IsEmpty (σ.pred (φ.toFun p))
   := (φ.pred_sub p).empty_iff
 
--- def PomIso.pred_inv {L} {α β: Pom L} (φ: PomIso α β) (p: β.carrier):
---   PomIso (α.pred (φ.invFun p)) (β.pred p).toPom
---   := sorry
+def PomIso.pred_inv {L} {α β: Pom L} (φ: PomIso α β) (p: β.carrier):
+  PomIso (α.pred (φ.invFun p)) (β.pred p).toPom
+  :=
+    have H: φ.toFun (φ.invFun p) = p := by simp; 
+    have H' := φ.pred (φ.invFun p);
+    by {
+      rw [H] at H';
+      exact H ▸ H' 
+    }
 
 def SubPom.univ_pred_pred_univ {L} (α: Pom L) (p)
   : (univ α).pred p = α.pred p.val
