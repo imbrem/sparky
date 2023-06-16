@@ -254,13 +254,13 @@ def PomEquiv.trans_pom_mid_infinite {L} [Ticked L] {α β γ: Pom L}
     λ_ => Sum.infinite_of_left
   ⟩
 
-def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
-  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
-  := ⟨
-    λH => sorry,
-    λH => sorry
-  ⟩
+-- def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+--   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+--   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
+--   := ⟨
+--     λH => sorry,
+--     λH => sorry
+--   ⟩
 
 def PomEquiv.trans_pom_mid_empty {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
@@ -765,8 +765,40 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
         | Sum.inr (Sum.inl e) => Or.inl True.intro
         | Sum.inr (Sum.inr ⟨e, p⟩) =>
           match Q.right_rem_char _ p.right with
-          | Or.inl p => Or.inr (Or.inl sorry)
-          | Or.inr p => Or.inr (Or.inr sorry)
+          | Or.inl q => Or.inr (Or.inl (
+            by {
+              have q := Q.reduce_right.is_reduct.infinite_preserved ⟨e, p.left⟩ q;
+              rw [<-(SubPom.pred_iso _ _).infinite_iff] at q;
+              have q := (Q.iso_right.pred_infinite_iff _).mp q;
+              exact @Infinite.of_injective _ _ q 
+                (λ⟨e', He'⟩ => 
+                let e'' :=  (P.trans_sub_tar_iso Q).symm.toFun  e';
+                have H: e'' = P.trans_tar_invFun Q e' := rfl;
+                  ⟨
+                    e''.val, 
+                    ⟨True.intro, 
+                      match e'' with
+                      | ⟨Sum.inl e'', _⟩ => by {
+                        simp [trans_pom, trans_order, trans_le, Pom.pred, Set.Mem, Membership.mem]
+                        sorry
+                      }
+                      | ⟨Sum.inr (Sum.inr ⟨e'', He'''⟩), _⟩ => by {
+                        simp [trans_pom, trans_order, trans_le, Pom.pred, Set.Mem, Membership.mem]
+                        sorry
+                      }
+                    ⟩
+                  ⟩) 
+                (λ⟨a, Ha⟩ ⟨b, Hb⟩ => by {
+                  simp only []
+                  rw [Subtype.mk_eq_mk]
+                  rw [Subtype.mk_eq_mk]
+                  apply Function.Injective.comp
+                  apply Subtype.val_injective
+                  apply Equiv.injective
+                })
+            }
+          ))
+          | Or.inr p => Or.inr (Or.inr p)
       infinite_preserved := λe =>
         match e with
         | ⟨Sum.inl e, He⟩ => sorry

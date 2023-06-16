@@ -81,7 +81,7 @@ instance {L} {α: Pom L}: CoeOut (SubPom α) (Type) := {
 }
 
 def Pom.pred {L} (α: Pom L) (p: α.carrier): SubPom α
-  := ⟨ α.order.le p ⟩
+  := ⟨ λ x => α.order.le x p ⟩
 
 def SubPom.pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier) 
   := ρ.inter (α.pred p.val)
