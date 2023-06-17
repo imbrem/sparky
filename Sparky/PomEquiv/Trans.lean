@@ -842,9 +842,7 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
                     ⟩
                   ⟩) 
                 (λ⟨a, Ha⟩ ⟨b, Hb⟩ => by {
-                  simp only []
-                  rw [Subtype.mk_eq_mk]
-                  rw [Subtype.mk_eq_mk]
+                  rw [Subtype.mk_eq_mk, Subtype.mk_eq_mk]
                   apply Function.Injective.comp
                   apply Subtype.val_injective
                   apply Equiv.injective
