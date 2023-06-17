@@ -281,14 +281,6 @@ def PomEquiv.trans_pom_mid_infinite {L} [Ticked L] {α β γ: Pom L}
     λ_ => Sum.infinite_of_left
   ⟩
 
--- def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
---   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
---   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
---   := ⟨
---     λH => sorry,
---     λH => sorry
---   ⟩
-
 def PomEquiv.trans_pom_mid_empty {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : IsEmpty (P.trans_pom Q) ↔ IsEmpty β
@@ -419,6 +411,83 @@ def PomEquiv.trans_sub_mid_pom {L} [Ticked L] {α β γ: Pom L}
     λe => match e with
     | Sum.inl _ => True
     | Sum.inr _ => False
+  ⟩
+
+def PomEquiv.trans_sub_left_rem_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := ⟨
+    λe => match e with
+    | Sum.inr (Sum.inl _) => True
+    | _ => False
+  ⟩
+
+def PomEquiv.trans_sub_right_rem_pom {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  : SubPom (P.trans_pom Q)
+  := ⟨
+    λe => match e with
+    | Sum.inr (Sum.inr _) => True
+    | _ => False
+  ⟩
+
+def PomEquiv.trans_pom_pred_factor_toFun {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} 
+  {p: (P.trans_pom Q).carrier} 
+  (e: ((P.trans_pom Q).pred p).carrier)
+  : 
+    ((P.trans_sub_mid_pom Q).inter ((P.trans_pom Q).pred p)).carrier
+    ⊕ ((P.trans_sub_left_rem_pom Q).inter ((P.trans_pom Q).pred p)).carrier
+    ⊕ ((P.trans_sub_right_rem_pom Q).inter ((P.trans_pom Q).pred p)).carrier
+  := match e with 
+  | ⟨Sum.inl e, He⟩ => Sum.inl ⟨Sum.inl e, True.intro, He⟩
+  | ⟨Sum.inr (Sum.inl e), He⟩ => 
+    Sum.inr (Sum.inl ⟨Sum.inr (Sum.inl e), True.intro, He⟩)
+  | ⟨Sum.inr (Sum.inr e), He⟩ => 
+    Sum.inr (Sum.inr ⟨Sum.inr (Sum.inr e), True.intro, He⟩)
+
+theorem PomEquiv.trans_pom_pred_factor_toFun_injective {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} 
+  (p: (P.trans_pom Q).carrier) 
+  : Function.Injective (@trans_pom_pred_factor_toFun L _ α β γ P Q p)
+  := λ⟨a, Ha⟩ ⟨b, Hb⟩ _H => by -- Wonder why H is marked unused here...
+    cases a <;> 
+    rename_i a <;>
+    (first | cases a | skip) <;>
+    cases b <;>
+    rename_i b <;>
+    (first | cases b | skip) <;>
+    cases _H <;> 
+    rfl
+
+def PomEquiv.trans_pom_pred_factor_infinite {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} 
+  {p: (P.trans_pom Q).carrier} 
+  (H: Infinite ((P.trans_pom Q).pred p))
+  : 
+    Infinite ((P.trans_sub_mid_pom Q).inter ((P.trans_pom Q).pred p)).carrier
+    ∨ Infinite ((P.trans_sub_left_rem_pom Q).inter ((P.trans_pom Q).pred p)).carrier
+    ∨ Infinite ((P.trans_sub_right_rem_pom Q).inter ((P.trans_pom Q).pred p)).carrier
+  :=
+    have H := @Infinite.of_injective 
+      _ _ H
+      (trans_pom_pred_factor_toFun)
+      (trans_pom_pred_factor_toFun_injective p);
+    match infinite_sum.mp H with
+    | Or.inl H => Or.inl H
+    | Or.inr H => Or.inr (infinite_sum.mp H)
+
+def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
+  := ⟨
+    λH => match trans_pom_pred_factor_infinite H with
+    | Or.inl H => sorry
+    | Or.inr (Or.inl H) => sorry
+    | Or.inr (Or.inr H) => sorry,
+    λH => @Infinite.of_injective _ _ H 
+      (λ⟨b, Hb⟩ => ⟨Sum.inl b, Hb⟩) 
+      (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
   ⟩
 
 def PomEquiv.trans_src_toFun {L} [Ticked L] {α β γ: Pom L}
@@ -850,10 +919,14 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
             }
           ))
           | Or.inr p => Or.inr (Or.inr p)
-      infinite_preserved := λe =>
+      infinite_preserved := λe H =>
         match e with
-        | ⟨Sum.inl e, He⟩ => sorry
-        | ⟨Sum.inr (Sum.inl e), He⟩ => sorry,
+        | ⟨Sum.inl e, He⟩ => 
+          have H := SubPom.univ_pred_pred_univ _ _ ▸ H;
+          sorry
+        | ⟨Sum.inr (Sum.inl e), He⟩ => 
+          have H := SubPom.univ_pred_pred_univ _ _ ▸ H;
+          sorry,
       infinite_shared := 
         λH => 
           (P.trans_sub_src_iso Q).infinite_iff.mpr 
