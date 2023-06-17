@@ -1,4 +1,5 @@
 import Mathlib.Init.Set
+import Mathlib.Data.Set.Lattice
 import Mathlib.Algebra.Group.Defs
 
 def ProgramOrder (M: Type) [Monoid M] (A: Type): Type := Option A × M
@@ -12,42 +13,38 @@ instance (M: Type) [Monoid M] (A: Type): Membership (Option A × M) (ProgramOrde
   mem := Set.Mem
 }
 
+def ProgramOrders.lift_opt {M: Type} [Monoid M] {A B: Type}  (f: A -> ProgramOrders M B)
+  : Option A -> ProgramOrders M B
+  | some a => f a
+  | none => { ⟨none, 1⟩ }
+
 instance (M: Type) [Monoid M]: Monad (ProgramOrders M) := {
   pure := λa => { ⟨ some a, 1 ⟩  },
-  map := λf A p => ∃a ∈ A, match a with
-    | ⟨some a, Ea⟩ => p = ⟨some (f a), Ea⟩
-    | ⟨none, Ea⟩ => p = ⟨none, Ea⟩, 
-  bind := λA f p => ∃a ∈ A, match a with 
-    | ⟨some a, Ea⟩ => ∃b ∈ f a, p = ⟨b.fst, Ea * b.snd⟩    
-    | ⟨none, Ea⟩ => p = ⟨none, Ea⟩,
+  map := λf A=> {⟨a.fst.map f, a.snd⟩ | a ∈ A }, 
+  bind := λA f => ⋃ a ∈ A, 
+    { (b.fst, a.snd * b.snd) | b ∈ ProgramOrders.lift_opt f a.fst }
 }
 
 instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
   map_const := rfl,
-  id_map := λA => by
-    funext ⟨a, Ea⟩
-    apply propext
-    apply Iff.intro
-    intro ⟨⟨b, Eb⟩, HbA, Hb⟩
-    cases b <;> exact Hb ▸ HbA
-    intro HA
-    cases a with
-    | some a => exact ⟨⟨some a, Ea⟩, HA, rfl⟩
-    | none => exact ⟨⟨none, Ea⟩, HA, rfl⟩
+  id_map := λA => Set.ext λ⟨a, Ea⟩ => ⟨
+      λ ⟨⟨b, Eb⟩, HbA, Hb⟩ => by cases b <;> exact Hb ▸ HbA,
+      λHA => ⟨⟨a, Ea⟩, HA, by cases a <;> rfl⟩
+    ⟩
   ,
   seqLeft_eq := λA B => by
-    funext ⟨p, Ep⟩
-    apply propext
+    simp only [SeqLeft.seqLeft, Seq.seq]
+    apply Set.ext
+    intro ⟨p, Ep⟩
     apply Iff.intro
-    intro ⟨⟨a, Ea⟩, HA, Ha⟩
-    cases a with
-    | some a => 
-      have ⟨⟨a', Ea'⟩, ⟨⟨b, Eb⟩, HB, Hb⟩, Ha'⟩ := Ha;
-      sorry
-    | none => 
-      exact ⟨⟨none, Ea⟩, ⟨⟨none, Ea⟩, HA, rfl⟩, Ha⟩
-    intro ⟨a, Ea⟩
-    sorry  
+    intro ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩
+    cases Hx
+    have ⟨Y, ⟨Hx, Hy⟩, HY⟩ := HX
+    cases Hy
+    have ⟨⟨y, Ey⟩, Hy, Hy'⟩ := HY
+    cases Hy'
+    exact ⟨_, ⟨⟨⟨sorry, sorry⟩, rfl⟩, sorry⟩⟩ 
+    sorry
     ,
   seqRight_eq := λA B => sorry,
   pure_seq := λf A => sorry,
