@@ -30,6 +30,26 @@ def PomEquiv.trans_le {L} [Ticked L] {α β γ: Pom L}
       P.shared.order.le (P.iso_right.invFun b).val r.val
   | Sum.inr (Sum.inr l), Sum.inr (Sum.inr r) => Q.shared.order.le l.val r.val
 
+def PomEquiv.trans_le_mid {L} [Ticked L] {α β γ: Pom L} 
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (l r: β.carrier)
+  : @trans_le L _ α β γ P Q (Sum.inl l) (Sum.inl r) ↔ β.order.le l r
+  := by rfl
+
+def PomEquiv.trans_le_mid_left {L} [Ticked L] {α β γ: Pom L} 
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (l: β.carrier) (r)
+  : @trans_le L _ α β γ P Q (Sum.inl l) (Sum.inr (Sum.inl r)) 
+  ↔ P.shared.order.le (P.iso_right.invFun l).val r.val
+  := by rfl
+
+def PomEquiv.trans_le_mid_right {L} [Ticked L] {α β γ: Pom L} 
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (l: β.carrier) (r)
+  : @trans_le L _ α β γ P Q (Sum.inl l) (Sum.inr (Sum.inr r)) 
+  ↔ Q.shared.order.le (Q.iso_left.invFun l).val r.val
+  := by rfl
+
 def PomEquiv.trans_order {L} [Ticked L] {α β γ: Pom L} (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PartialOrder (P.trans_carrier Q)
   := {
@@ -560,12 +580,14 @@ def PomEquiv.trans_tar_toFun {L} [Ticked L] {α β γ: Pom L}
 
 theorem PomEquiv.trans_tar_toFun_mid {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e: β.carrier) (p)
-  : P.trans_tar_toFun Q ⟨Sum.inl e, p⟩  = Q.iso_right.toFun ⟨(Q.iso_left.invFun e).val, p⟩ 
+  : P.trans_tar_toFun Q ⟨Sum.inl e, p⟩ 
+  = Q.iso_right.toFun ⟨(Q.iso_left.invFun e).val, p⟩ 
   := rfl
 
 theorem PomEquiv.trans_tar_toFun_right {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e: Q.right_rem.carrier) (p)
-  : P.trans_tar_toFun Q ⟨Sum.inr (Sum.inr e), p⟩ = Q.iso_right.toFun ⟨e.val, e.property.left⟩ 
+  : P.trans_tar_toFun Q ⟨Sum.inr (Sum.inr e), p⟩ 
+  = Q.iso_right.toFun ⟨e.val, e.property.left⟩ 
   := rfl
 
 noncomputable def PomEquiv.trans_tar_invFun {L} [Ticked L] {α β γ: Pom L}
@@ -640,6 +662,30 @@ theorem PomEquiv.trans_tar_right_inv [Ticked L] {α β γ: Pom L}
               PomIso.symm_toRelIso
             ]
       }
+
+theorem PomEquiv.trans_tar_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (c: γ.carrier)
+  : Sum.inl b = (P.trans_tar_invFun Q c).val
+  ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
+  := sorry
+
+theorem PomEquiv.trans_tar_invFun_eq_right {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (c: γ.carrier)
+  : Sum.inr (Sum.inr r) = (P.trans_tar_invFun Q c).val
+  ↔ r.val = (Q.iso_right.invFun c).val
+  := sorry
+
+theorem PomEquiv.trans_tar_invFun_eq_mid' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (Hb) (c: γ.carrier)
+  : ⟨Sum.inl b, Hb⟩ = (P.trans_tar_invFun Q c)
+  ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
+  := sorry
+
+theorem PomEquiv.trans_tar_invFun_eq_right' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (Hr) (c: γ.carrier)
+  : ⟨Sum.inr (Sum.inr r), Hr⟩ = (P.trans_tar_invFun Q c)
+  ↔ r.val = (Q.iso_right.invFun c).val
+  := sorry
 
 noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
@@ -778,10 +824,10 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
                     e''.val, 
                     ⟨True.intro, 
                       match e'' with
-                      | ⟨Sum.inl e'', _⟩ => by {
-                        simp [trans_pom, trans_order, trans_le, Pom.pred, Set.Mem, Membership.mem]
-                        sorry
-                      }
+                      | ⟨Sum.inl e'', _⟩ =>
+                        have H := (P.trans_tar_invFun_eq_mid' Q _ _ _).mp H;
+                        have H := H ▸ (Q.right_shared_pred' _ _ p.left).mp He';
+                        (P.trans_le_mid_right Q _ _).mpr H
                       | ⟨Sum.inr (Sum.inr ⟨e'', He'''⟩), _⟩ => by {
                         simp [trans_pom, trans_order, trans_le, Pom.pred, Set.Mem, Membership.mem]
                         sorry

@@ -83,8 +83,28 @@ instance {L} {α: Pom L}: CoeOut (SubPom α) (Type) := {
 def Pom.pred {L} (α: Pom L) (p: α.carrier): SubPom α
   := ⟨ λ x => α.order.le x p ⟩
 
+theorem Pom.pred_def {L} {α: Pom L} (p e: α.carrier)
+  : (e ∈ (α.pred p).contains) ↔ (α.order.le e p)
+  := by rfl
+
 def SubPom.pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier) 
   := ρ.inter (α.pred p.val)
+
+theorem SubPom.carrier.pred_def {L} {α: Pom L} {ρ: SubPom α} (p e: ρ.carrier)
+  : (e.val ∈ (ρ.pred p).contains) ↔ (α.order.le e.val p.val)
+  := ⟨
+    λ⟨_, H⟩ => H,
+    λH => ⟨e.property, H⟩
+  ⟩
+
+theorem SubPom.carrier.pred_def' {L} {α: Pom L} {ρ: SubPom α} (p e: ρ.carrier)
+  : (e.val ∈ (ρ.pred p).contains) ↔ (e.val ∈ ρ.contains ∧ α.order.le e.val p.val)
+  := by rfl
+
+theorem SubPom.pred_char {L} {α: Pom L} {ρ: SubPom α} {p e: ρ.carrier}
+  (H: e.val ∈ (ρ.pred p).contains): α.order.le e.val p.val
+  := (p.pred_def e).mp H
+
 def SubPom.happens {L} {α: Pom L} (ρ: SubPom α): SubPom α
   := ⟨ λe => ∃p: ρ.contains e, Finite (ρ.pred ⟨e, p⟩) ⟩ 
 def SubPom.never {L} {α: Pom L} (ρ: SubPom α): SubPom α
@@ -197,4 +217,16 @@ theorem SubPom.order_char {L} {α: Pom L} {ρ: SubPom α}
 theorem SubPom.order_char' {L} {α: Pom L} {ρ: SubPom α}
   (a b: ρ.carrier)
   : ρ.toPom.order.le a b ↔ α.order.le a.val b.val
+  := by rfl
+
+theorem SubPom.order_mk_char {L} {α: Pom L} {ρ: SubPom α}
+  (a b: α.carrier)
+  (Ha Hb)
+  : ρ.order.le ⟨a, Ha⟩ ⟨b, Hb⟩ ↔ α.order.le a b
+  := by rfl
+
+theorem SubPom.order_mk_char' {L} {α: Pom L} {ρ: SubPom α}
+  (a b: α.carrier)
+  (Ha Hb)
+  : ρ.toPom.order.le ⟨a, Ha⟩ ⟨b, Hb⟩ ↔ α.order.le a b
   := by rfl
