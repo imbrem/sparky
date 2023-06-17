@@ -36,6 +36,13 @@ def PomEquiv.trans_le_mid {L} [Ticked L] {α β γ: Pom L}
   : @trans_le L _ α β γ P Q (Sum.inl l) (Sum.inl r) ↔ β.order.le l r
   := by rfl
 
+def PomEquiv.trans_le_right {L} [Ticked L] {α β γ: Pom L} 
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (l) (r)
+  : @trans_le L _ α β γ P Q (Sum.inr (Sum.inr l)) (Sum.inr (Sum.inr r)) 
+  ↔ Q.shared.order.le l.val r.val
+  := by rfl
+
 def PomEquiv.trans_le_mid_left {L} [Ticked L] {α β γ: Pom L} 
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   (l: β.carrier) (r)
@@ -828,10 +835,10 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
                         have H := (P.trans_tar_invFun_eq_mid' Q _ _ _).mp H;
                         have H := H ▸ (Q.right_shared_pred' _ _ p.left).mp He';
                         (P.trans_le_mid_right Q _ _).mpr H
-                      | ⟨Sum.inr (Sum.inr ⟨e'', He'''⟩), _⟩ => by {
-                        simp [trans_pom, trans_order, trans_le, Pom.pred, Set.Mem, Membership.mem]
-                        sorry
-                      }
+                      | ⟨Sum.inr (Sum.inr ⟨e'', He'''⟩), _⟩ => 
+                        have H := (P.trans_tar_invFun_eq_right' Q _ _ _).mp H;
+                        have H := H.symm ▸ (Q.right_shared_pred' _ _ p.left).mp He';
+                        (P.trans_le_right Q _ _).mpr H
                     ⟩
                   ⟩) 
                 (λ⟨a, Ha⟩ ⟨b, Hb⟩ => by {
