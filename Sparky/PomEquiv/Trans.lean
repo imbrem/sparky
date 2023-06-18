@@ -825,7 +825,7 @@ def PomEquiv.trans_sub_mid_iso {L} [Ticked L] {α β γ: Pom L}
       action_eq := λ{e} => match e with | ⟨Sum.inl e, _⟩ => rfl 
   }
 
-def PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
   := ⟨
@@ -881,7 +881,7 @@ def PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
       (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
   ⟩
 
-def PomEquiv.trans_pom_mid_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_pom_mid_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
   ↔ Infinite (P.reduce_right.shared.pred (P.iso_right.invFun b))
@@ -893,7 +893,7 @@ def PomEquiv.trans_pom_mid_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
     ]
     rfl
 
-def PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
   ↔ Infinite (P.shared.pred (P.iso_right.invFun b).val)
@@ -906,17 +906,32 @@ def PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
       SubPom.univ_pred_pred_univ
     ]
 
-def PomEquiv.trans_pom_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
-  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
-  ↔ Infinite (P.shared.pred e.val)
-  := sorry
-
-def PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
   : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
   ↔ Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
-  := sorry
+  := ⟨
+    λH => sorry,
+    λH => @Infinite.of_injective _ _ H 
+      (λ⟨a, Ha⟩ => ⟨
+        ((trans_sub_src_iso P Q).invFun a).val, 
+        by
+          rw [Pom.pred_def]
+          have H := (trans_sub_src_iso P Q).left_inv ⟨(Sum.inr (Sum.inl e)), True.intro⟩;
+          have H := congr_arg Subtype.val H;
+          simp only [] at H
+          rw [<-H]
+          apply (trans_sub_src_iso P Q).symm.map_rel_iff.mpr
+          exact Ha
+        ⟩)
+      (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by 
+        rw [Subtype.mk_eq_mk] at H
+        have H := Subtype.eq H
+        simp at H
+        cases H
+        rfl
+      )
+  ⟩
 
 def PomEquiv.trans_pom_right_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
