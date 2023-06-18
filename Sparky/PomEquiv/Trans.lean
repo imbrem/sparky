@@ -949,10 +949,14 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_finite {L} [Ticked L] 
     (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inl e))))
   := 
     let ⟨b, Hb⟩ := binary_predicate_pigeonhole _ I F;
-    have ⟨c, Hc, Hb'⟩ := Hb.nonempty;
+    have ⟨_, _, Hb'⟩ := Hb.nonempty;
     have H := 
       (Q.reduce_left.is_reduct.pred_infinite_iff 
-      (Q.iso_left.invFun b)).mp sorry
+      (Q.iso_left.invFun b)).mp (
+        @Infinite.of_injective _ _ Hb
+          (λ⟨a, Ha⟩ => ⟨a, True.intro, Ha.left⟩)
+          (λ⟨_, _⟩ ⟨_, _⟩ H => by cases H; rfl)
+      )
     @Infinite.of_injective _ _ H
       (λ⟨q, Hq, Hq'⟩ => ⟨
         Sum.inl (Q.iso_left.toFun ⟨q, Hq⟩), True.intro, 
