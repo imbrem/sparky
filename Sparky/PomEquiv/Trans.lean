@@ -781,7 +781,33 @@ theorem PomEquiv.trans_tar_invFun_eq_right' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (Hr) (c: γ.carrier)
   : ⟨Sum.inr (Sum.inr r), Hr⟩ = (P.trans_tar_invFun Q c)
   ↔ r.val = (Q.iso_right.invFun c).val
-  := sorry
+  := by
+    simp only [Set.Mem, Membership.mem, trans_sub_tar_pom] at Hr 
+    simp only [trans_tar_invFun]
+    generalize Hqc: Q.iso_right.invFun c = qc;
+    cases qc with
+    | mk qc Hqc' =>
+      simp only []
+      split
+      case inl H =>
+        exact ⟨
+          (λH => by cases H),
+          λH' => by
+            apply False.elim
+            cases r with
+            | mk r Hr =>
+              have ⟨Hr, Hr'⟩ := Hr;
+              apply Hr'
+              rw [<-H'] at H
+              exact H
+        ⟩  
+      case inr H => 
+        cases r with
+        | mk r Hr =>
+          rw [Subtype.mk_eq_mk]
+          rw [Sum.inr.inj_iff]
+          rw [Sum.inr.inj_iff]
+          rw [Subtype.mk_eq_mk]
 
 noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
