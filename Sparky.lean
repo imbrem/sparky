@@ -4,3 +4,4 @@ import Sparky.SubPom
 import Sparky.PomReduce
 import Sparky.PomEquiv
 import Sparky.OrderMonad
+import Sparky.Utils
