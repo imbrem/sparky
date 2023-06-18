@@ -836,8 +836,25 @@ def PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
         (SubPom.pred_iso _ _).infinite_iff
       ]
       exact H
-    | Or.inr (Or.inl H) => sorry
-    | Or.inr (Or.inr H) => sorry,
+    | Or.inr (Or.inl H) => 
+      have H: Infinite (P.shared.pred (P.iso_right.invFun b).val) 
+        := @Infinite.of_injective _ _ H
+          (λe => match e with 
+          | ⟨Sum.inr (Sum.inl e), He⟩ => 
+            ⟨
+              e.val, 
+              by
+                rw []
+                exact sorry
+            ⟩
+          )
+          (λa b => match a, b with
+            | ⟨Sum.inr (Sum.inl ⟨a, Ha'⟩), Ha⟩, ⟨Sum.inr (Sum.inl ⟨b, Hb'⟩), Hb⟩ 
+              => λH => by cases H; rfl);
+      have H: Infinite (P.reduce_right.shared.pred (P.iso_right.invFun b)) := sorry;
+      sorry
+    | Or.inr (Or.inr H) => 
+      sorry,
     λH => @Infinite.of_injective _ _ H 
       (λ⟨b, Hb⟩ => ⟨Sum.inl b, Hb⟩) 
       (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
