@@ -87,6 +87,10 @@ theorem Pom.pred_def {L} {α: Pom L} (p e: α.carrier)
   : (e ∈ (α.pred p).contains) ↔ (α.order.le e p)
   := by rfl
 
+theorem Pom.sub_pred_def {L} {α: Pom L} {ρ: SubPom α} (p e: ρ.carrier)
+  : (e ∈ (ρ.toPom.pred p).contains) ↔ (α.order.le e.val p.val)
+  := by rfl
+
 def SubPom.pred {L} {α: Pom L} (ρ: SubPom α) (p: ρ.carrier) 
   := ρ.inter (α.pred p.val)
 

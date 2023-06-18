@@ -840,13 +840,11 @@ def PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
       have H: Infinite ((SubPom.univ P.shared).pred ⟨(P.iso_right.invFun b).val, True.intro⟩) 
         := @Infinite.of_injective _ _ H
           (λe => match e with 
-          | ⟨Sum.inr (Sum.inl e), He⟩ => 
+          | ⟨Sum.inr (Sum.inl ⟨e, He⟩), He'⟩ => 
             ⟨
-              e.val, 
+              e, 
               True.intro,
-              by
-                rw []
-                exact sorry
+              He'.right
             ⟩
           )
           (λa b => match a, b with
