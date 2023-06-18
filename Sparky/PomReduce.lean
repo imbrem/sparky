@@ -39,7 +39,10 @@ def SubPomReduces.pred_infinite_iff' {L} [Ticked L] {α: Pom L}
   {ρ σ: SubPom α} (S: SubPomReduces ρ σ) (p: σ.carrier)
   : Infinite (ρ.toPom.pred ⟨p.val, S.subset p.property⟩) 
   ↔ Infinite (σ.toPom.pred p)
-  := sorry
+  := by
+    rw [(SubPom.pred_iso _ _).infinite_iff]
+    rw [(SubPom.pred_iso _ _).infinite_iff]
+    exact S.pred_infinite_iff p
 
 def SubPomReduces.empty_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
   (S: SubPomReduces ρ σ)
