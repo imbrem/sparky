@@ -911,12 +911,19 @@ theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
   ↔ Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
   := ⟨
-    λH => sorry,
+    λH => match trans_pom_pred_factor_infinite H with
+    | Or.inl H => sorry
+    | Or.inr (Or.inl H) => @Infinite.of_injective _ _ H
+      (λ⟨Sum.inr (Sum.inl ⟨a, Ha, Hnb⟩), Ha', Ha''⟩ => ⟨
+        P.iso_left.toFun ⟨a, Ha⟩, 
+        P.iso_left.map_rel_iff.mpr Ha''
+      ⟩)
+      sorry
+    | Or.inr (Or.inr H) => sorry,
     λH => @Infinite.of_injective _ _ H 
       (λ⟨a, Ha⟩ => ⟨
         ((trans_sub_src_iso P Q).invFun a).val, 
         by
-          rw [Pom.pred_def]
           have H := (trans_sub_src_iso P Q).left_inv ⟨(Sum.inr (Sum.inl e)), True.intro⟩;
           have H := congr_arg Subtype.val H;
           simp only [] at H
