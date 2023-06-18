@@ -936,18 +936,36 @@ theorem PomEquiv.trans_pom_left_mid_left_infinite_helper {L} [Ticked L] {α β �
 
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_finite {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
-  (H: Infinite { c: Q.shared.carrier // ∃b: β.carrier,   
+  (I: Infinite { c: Q.shared.carrier // ∃b: β.carrier,   
     Q.shared.order.le c (Q.iso_left.invFun b).val ∧
     P.shared.order.le (P.iso_right.invFun b).val e.val
   })
-  (H: Finite { b: β.carrier // ∃c: Q.shared.carrier,  
+  (F: Finite { b: β.carrier // ∃c: Q.shared.carrier,  
     Q.shared.order.le c (Q.iso_left.invFun b).val ∧
     P.shared.order.le (P.iso_right.invFun b).val e.val
   })
   : Infinite (SubPom.inter 
     (trans_sub_mid_pom P Q) 
     (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inl e))))
-  := sorry
+  := 
+    let ⟨b, Hb⟩ := binary_predicate_pigeonhole _ I F;
+    have ⟨c, Hc, Hb'⟩ := Hb.nonempty;
+    have H := 
+      (Q.reduce_left.is_reduct.pred_infinite_iff 
+      (Q.iso_left.invFun b)).mp sorry
+    @Infinite.of_injective _ _ H
+      (λ⟨q, Hq, Hq'⟩ => ⟨
+        Sum.inl (Q.iso_left.toFun ⟨q, Hq⟩), True.intro, 
+        P.shared.order.le_trans _ _ _ (
+          P.iso_right.symm.map_rel_iff.mpr (by
+            rw [<-Q.iso_left.right_inv b]
+            apply Q.iso_left.map_rel_iff.mpr
+            exact Hq'
+          )
+        ) 
+        Hb'
+      ⟩)
+      sorry
 
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_infinite {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
