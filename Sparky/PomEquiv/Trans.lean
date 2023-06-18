@@ -1135,24 +1135,6 @@ def PomEquiv.trans_pom_right_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   ↔ Infinite (Q.shared.pred e.val)
   := sorry
 
-def PomEquiv.trans_sub_mid {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ)
-  : PomReduct (P.trans_pom Q)
-  := {
-    shared := P.trans_sub_mid_pom Q,
-    is_reduct := {
-      subset := λ_ _ => True.intro,
-      infinite_or_tick := λ⟨e, _⟩ =>
-        match e with
-        | Sum.inl e => Or.inl True.intro
-        | Sum.inr (Sum.inl e) => sorry --TODO: rem theorem
-        | Sum.inr (Sum.inr e) => sorry --TODO: rem theorem
-      infinite_preserved := sorry
-      infinite_shared := sorry
-      empty_shared := sorry
-    },
-  }
-
 def PomEquiv.trans_pom_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
   : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
