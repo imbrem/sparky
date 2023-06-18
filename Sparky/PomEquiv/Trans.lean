@@ -906,17 +906,17 @@ theorem PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom
       SubPom.univ_pred_pred_univ
     ]
 
-theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_pom_left_mid_left_infinite_helper {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
-  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
-  ↔ Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
-  := ⟨
-    λH => match trans_pom_pred_factor_infinite H with
-    | Or.inl H => by
+  (H: Infinite (SubPom.inter 
+    (trans_sub_mid_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inl e)))))
+  : Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
+  := by
       rw [<-P.iso_left.pred_infinite_iff]
       rw [<-P.reduce_left.is_reduct.pred_infinite_iff']
       exact @Infinite.of_injective _ _ H
-        (λ⟨Sum.inl b, Hb, Hb'⟩ => 
+        (λ⟨Sum.inl b, _, Hb'⟩ => 
           ⟨⟨(P.iso_right.invFun b).val, True.intro⟩, Hb'⟩)
         (λ⟨Sum.inl a, Ha, Ha'⟩ ⟨Sum.inl b, Hb, Hb'⟩ H => 
           by 
@@ -932,6 +932,14 @@ theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
             cases H
             rfl
         )
+
+theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
+  ↔ Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
+  := ⟨
+    λH => match trans_pom_pred_factor_infinite H with
+    | Or.inl H => trans_pom_left_mid_left_infinite_helper P Q e H
     | Or.inr (Or.inl H) => @Infinite.of_injective _ _ H
       (λ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ => ⟨
         P.iso_left.toFun ⟨a, Ha⟩, 
