@@ -905,7 +905,7 @@ def PomEquiv.trans_pom_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
   ↔ Infinite 
     (α.pred ((trans_sub_src_iso P Q).toFun 
       ⟨Sum.inr (Sum.inl e), True.intro⟩))
-  := sorry
+  := trans_pom_left_infinite_pred' P Q e
 
 def PomEquiv.trans_pom_mid_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
