@@ -140,6 +140,11 @@ theorem PomIso.pred_infinite_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.ca
   Infinite (α.pred p) ↔ Infinite (β.pred (φ.toFun p))
   := (φ.pred p).infinite_iff
 
+theorem PomIso.pred_infinite_iff' {L} {α β: Pom L} (φ: PomIso α β) 
+  (p: β.carrier):
+  Infinite (α.pred (φ.invFun p)) ↔ Infinite (β.pred p)
+  := sorry
+
 theorem PomIso.pred_empty_iff {L} {α β: Pom L} (φ: PomIso α β) (p: α.carrier):
   IsEmpty (α.pred p) ↔ IsEmpty (β.pred (φ.toFun p))
   := (φ.pred p).empty_iff

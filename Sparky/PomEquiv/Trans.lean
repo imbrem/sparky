@@ -490,6 +490,24 @@ def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
       (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
   ⟩
 
+def PomEquiv.trans_pom_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
+  ↔ Infinite (P.shared.pred e.val)
+  := sorry
+
+def PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
+  ↔ Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
+  := sorry
+
+def PomEquiv.trans_pom_right_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inr e))) 
+  ↔ Infinite (Q.shared.pred e.val)
+  := sorry
+
 def PomEquiv.trans_src_toFun {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   (e: (P.trans_sub_src_pom Q).carrier): α.carrier
@@ -856,6 +874,14 @@ def PomEquiv.trans_sub_mid {L} [Ticked L] {α β γ: Pom L}
     },
   }
 
+def PomEquiv.trans_pom_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inl e))) 
+  ↔ Infinite 
+    (α.pred ((trans_sub_src_iso P Q).toFun 
+      ⟨Sum.inr (Sum.inl e), True.intro⟩))
+  := sorry
+
 def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomReduct (P.trans_pom Q)
@@ -923,10 +949,15 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
         match e with
         | ⟨Sum.inl e, He⟩ => 
           have H := SubPom.univ_pred_pred_univ _ _ ▸ H;
+          have H := H;
           sorry
         | ⟨Sum.inr (Sum.inl e), He⟩ => 
-          have H := SubPom.univ_pred_pred_univ _ _ ▸ H;
-          sorry,
+          have H := (SubPom.univ_pred_pred_univ 
+            (trans_pom P Q) 
+            ⟨Sum.inr (Sum.inl e), True.intro⟩) ▸ H;
+          have H := (trans_pom_left_infinite_pred'' P Q _).mp H;
+          have H := ((trans_sub_src_iso P Q).pred_infinite_iff _).mpr H;
+          (SubPom.pred_iso _ _).infinite_iff.mp H,
       infinite_shared := 
         λH => 
           (P.trans_sub_src_iso Q).infinite_iff.mpr 
