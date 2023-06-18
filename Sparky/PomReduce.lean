@@ -15,7 +15,7 @@ structure SubPomReduces {L} [Ticked L] {α: Pom L} (ρ σ: SubPom α): Prop :=
   infinite_shared: Infinite ρ -> Infinite σ
   empty_shared: IsEmpty σ -> IsEmpty ρ  
 
-def SubPomReduces.infinite_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
+theorem SubPomReduces.infinite_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
   (S: SubPomReduces ρ σ)
   : Infinite ρ ↔ Infinite σ
   := ⟨
@@ -25,12 +25,14 @@ def SubPomReduces.infinite_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
       λ{a b} H => by cases a; cases b; cases H; rfl
   ⟩
 
-def SubPomReduces.pred_infinite_iff {L} [Ticked L] {α: Pom L} 
+theorem SubPomReduces.pred_infinite_iff {L} [Ticked L] {α: Pom L} 
   {ρ σ: SubPom α} (S: SubPomReduces ρ σ) (p: σ.carrier)
   : Infinite (ρ.pred ⟨p.val, S.subset p.property⟩) ↔ Infinite (σ.pred p)
   := ⟨
     S.infinite_preserved p, 
-    sorry
+    λH => @Infinite.of_injective _ _ H
+      (λ⟨e, H, H'⟩ => ⟨e, S.subset H, H'⟩)
+      λ⟨_, _, _⟩ ⟨_, _, _⟩ H => by cases H; rfl
   ⟩
 
 def SubPomReduces.pred_infinite_iff' {L} [Ticked L] {α: Pom L} 
