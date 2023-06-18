@@ -914,11 +914,21 @@ theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
     λH => match trans_pom_pred_factor_infinite H with
     | Or.inl H => sorry
     | Or.inr (Or.inl H) => @Infinite.of_injective _ _ H
-      (λ⟨Sum.inr (Sum.inl ⟨a, Ha, Hnb⟩), Ha', Ha''⟩ => ⟨
+      (λ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ => ⟨
         P.iso_left.toFun ⟨a, Ha⟩, 
-        P.iso_left.map_rel_iff.mpr Ha''
+        P.iso_left.map_rel_iff.mpr Ha'
       ⟩)
-      sorry
+      (λ
+        ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ 
+        ⟨Sum.inr (Sum.inl ⟨b, Hb, _⟩), _, Hb'⟩
+        => by 
+          rw [Subtype.mk_eq_mk]
+          rw [Subtype.mk_eq_mk]
+          simp only [Equiv.toFun_as_coe_apply, RelIso.coe_toEquiv, EmbeddingLike.apply_eq_iff_eq]
+          intro H
+          cases H
+          rfl
+        )
     | Or.inr (Or.inr H) => sorry,
     λH => @Infinite.of_injective _ _ H 
       (λ⟨a, Ha⟩ => ⟨
