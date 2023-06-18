@@ -743,7 +743,39 @@ theorem PomEquiv.trans_tar_invFun_eq_mid' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (Hb) (c: γ.carrier)
   : ⟨Sum.inl b, Hb⟩ = (P.trans_tar_invFun Q c)
   ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
-  := sorry
+  := by
+    simp only [Set.Mem, Membership.mem, trans_sub_tar_pom] at Hb 
+    simp only [trans_tar_invFun]
+    generalize Hqc: Q.iso_right.invFun c = qc;
+    cases qc with
+    | mk qc Hqc' =>
+      simp only []
+      split
+      case inl H =>
+        rw [Subtype.mk_eq_mk]
+        rw [Sum.inl.inj_iff]
+        rw [
+          <-@EmbeddingLike.apply_eq_iff_eq _ _ _ _ 
+            Q.iso_left.symm.toEquiv b _,
+        ]
+        simp only [
+          RelIso.coe_toEquiv, 
+          Equiv.toFun_as_coe_apply, 
+          Equiv.invFun_as_coe,
+          PomIso.symm
+        ]
+        rw [RelIso.symm_apply_apply]
+        exact Subtype.mk_eq_mk
+      case inr H => 
+        exact ⟨
+          (λH => by cases H),
+          λH' => by
+            apply False.elim
+            apply H
+            rw [<-H']
+            let ⟨_, H''⟩ := (Q.iso_left.invFun b);
+            exact H''
+        ⟩  
 
 theorem PomEquiv.trans_tar_invFun_eq_right' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (Hr) (c: γ.carrier)
