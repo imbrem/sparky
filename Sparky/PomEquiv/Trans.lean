@@ -477,7 +477,7 @@ def PomEquiv.trans_pom_pred_factor_infinite {L} [Ticked L] {α β γ: Pom L}
     | Or.inl H => Or.inl H
     | Or.inr H => Or.inr (infinite_sum.mp H)
 
-def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+def PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) ↔ Infinite (β.pred b)
   := ⟨
@@ -489,6 +489,26 @@ def PomEquiv.trans_pom_mid_infinite_pred {L} [Ticked L] {α β γ: Pom L}
       (λ⟨b, Hb⟩ => ⟨Sum.inl b, Hb⟩) 
       (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
   ⟩
+
+def PomEquiv.trans_pom_mid_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
+  ↔ Infinite (P.reduce_right.shared.pred (P.iso_right.invFun b))
+  := by
+    rw [
+      trans_pom_mid_infinite_pred' P Q b,
+      P.iso_right.symm.pred_infinite_iff _,
+      (SubPom.pred_iso P.reduce_right.shared _).infinite_iff
+    ]
+    rfl
+
+def PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
+  ↔ Infinite (P.shared.pred (P.iso_right.invFun b).val)
+  := Iff.trans 
+    (trans_pom_mid_infinite_pred' P Q b) 
+    sorry
 
 def PomEquiv.trans_pom_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
@@ -886,7 +906,8 @@ def PomEquiv.trans_pom_mid_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
   ↔ Infinite (α.pred ((P.trans_sub_src_iso Q).toFun ⟨Sum.inl b, H⟩))
-  := sorry
+  := Iff.trans 
+    (trans_pom_mid_infinite_pred' P Q b) sorry
 
 def PomEquiv.trans_pom_mid_right_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
