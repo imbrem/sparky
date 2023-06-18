@@ -912,7 +912,26 @@ theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   ↔ Infinite (α.pred (P.iso_left.toFun ⟨e.val, e.property.left⟩))
   := ⟨
     λH => match trans_pom_pred_factor_infinite H with
-    | Or.inl H => sorry
+    | Or.inl H => by
+      rw [<-P.iso_left.pred_infinite_iff]
+      rw [<-P.reduce_left.is_reduct.pred_infinite_iff']
+      exact @Infinite.of_injective _ _ H
+        (λ⟨Sum.inl b, Hb, Hb'⟩ => 
+          ⟨⟨(P.iso_right.invFun b).val, True.intro⟩, Hb'⟩)
+        (λ⟨Sum.inl a, Ha, Ha'⟩ ⟨Sum.inl b, Hb, Hb'⟩ H => 
+          by 
+            rw [Subtype.mk_eq_mk] at H
+            simp only [Equiv.invFun_as_coe] at H 
+            rw [Subtype.mk_eq_mk] at H
+            have H := Subtype.eq H
+            simp only [
+              Equiv.toFun_as_coe_apply, 
+              RelIso.coe_toEquiv, 
+              EmbeddingLike.apply_eq_iff_eq
+            ] at H
+            cases H
+            rfl
+        )
     | Or.inr (Or.inl H) => @Infinite.of_injective _ _ H
       (λ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ => ⟨
         P.iso_left.toFun ⟨a, Ha⟩, 
@@ -922,10 +941,13 @@ theorem PomEquiv.trans_pom_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
         ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ 
         ⟨Sum.inr (Sum.inl ⟨b, Hb, _⟩), _, Hb'⟩
         => by 
-          rw [Subtype.mk_eq_mk]
-          rw [Subtype.mk_eq_mk]
-          simp only [Equiv.toFun_as_coe_apply, RelIso.coe_toEquiv, EmbeddingLike.apply_eq_iff_eq]
           intro H
+          rw [Subtype.mk_eq_mk] at H
+          simp only [
+            Equiv.toFun_as_coe_apply, 
+            RelIso.coe_toEquiv, 
+            EmbeddingLike.apply_eq_iff_eq
+          ] at H
           cases H
           rfl
         )
