@@ -25,6 +25,20 @@ def SubPomReduces.infinite_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
       λ{a b} H => by cases a; cases b; cases H; rfl
   ⟩
 
+def SubPomReduces.pred_infinite_iff {L} [Ticked L] {α: Pom L} 
+  {ρ σ: SubPom α} (S: SubPomReduces ρ σ) (p: σ.carrier)
+  : Infinite (ρ.pred ⟨p.val, S.subset p.property⟩) ↔ Infinite (σ.pred p)
+  := ⟨
+    S.infinite_preserved p, 
+    sorry
+  ⟩
+
+def SubPomReduces.pred_infinite_iff' {L} [Ticked L] {α: Pom L} 
+  {ρ σ: SubPom α} (S: SubPomReduces ρ σ) (p: σ.carrier)
+  : Infinite (ρ.toPom.pred ⟨p.val, S.subset p.property⟩) 
+  ↔ Infinite (σ.toPom.pred p)
+  := sorry
+
 def SubPomReduces.empty_iff {L} [Ticked L] {α: Pom L} {ρ σ: SubPom α}
   (S: SubPomReduces ρ σ)
   : IsEmpty ρ ↔ IsEmpty σ

@@ -506,9 +506,14 @@ def PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
   ↔ Infinite (P.shared.pred (P.iso_right.invFun b).val)
-  := Iff.trans 
-    (trans_pom_mid_infinite_pred' P Q b) 
-    sorry
+  := by
+    rw [
+      trans_pom_mid_left_infinite_pred'' P Q b,
+      <-(SubPom.pred_iso _ _).infinite_iff,
+      <-P.reduce_right.is_reduct.pred_infinite_iff',
+      (SubPom.pred_iso _ _).infinite_iff,
+      SubPom.univ_pred_pred_univ
+    ]
 
 def PomEquiv.trans_pom_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
