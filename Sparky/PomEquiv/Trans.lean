@@ -726,17 +726,17 @@ theorem PomEquiv.trans_tar_right_inv [Ticked L] {α β γ: Pom L}
             ]
       }
 
-theorem PomEquiv.trans_tar_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (c: γ.carrier)
-  : Sum.inl b = (P.trans_tar_invFun Q c).val
-  ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
-  := sorry
+-- theorem PomEquiv.trans_tar_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
+--   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (c: γ.carrier)
+--   : Sum.inl b = (P.trans_tar_invFun Q c).val
+--   ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
+--   := sorry
 
-theorem PomEquiv.trans_tar_invFun_eq_right {L} [Ticked L] {α β γ: Pom L}
-  (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (c: γ.carrier)
-  : Sum.inr (Sum.inr r) = (P.trans_tar_invFun Q c).val
-  ↔ r.val = (Q.iso_right.invFun c).val
-  := sorry
+-- theorem PomEquiv.trans_tar_invFun_eq_right {L} [Ticked L] {α β γ: Pom L}
+--   (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (c: γ.carrier)
+--   : Sum.inr (Sum.inr r) = (P.trans_tar_invFun Q c).val
+--   ↔ r.val = (Q.iso_right.invFun c).val
+--   := sorry
 
 theorem PomEquiv.trans_tar_invFun_eq_mid' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (Hb) (c: γ.carrier)
@@ -857,7 +857,25 @@ def PomEquiv.trans_pom_mid_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
         rw [P.iso_right.right_inv] at H
         exact H
     | Or.inr (Or.inr H) => 
-      sorry,
+      by
+        have H: Infinite ((SubPom.univ Q.shared).pred ⟨(Q.iso_left.invFun b).val, True.intro⟩) 
+          := @Infinite.of_injective _ _ H
+            (λe => match e with 
+            | ⟨Sum.inr (Sum.inr ⟨e, He⟩), He'⟩ => 
+              ⟨
+                e, 
+                True.intro,
+                He'.right
+              ⟩
+            )
+            (λa b => match a, b with
+              | ⟨Sum.inr (Sum.inr ⟨a, Ha'⟩), Ha⟩, ⟨Sum.inr (Sum.inr ⟨b, Hb'⟩), Hb⟩ 
+                => λH => by cases H; rfl);
+        have H := (Q.reduce_left.is_reduct.pred_infinite_iff _).mp H;
+        have H := (SubPom.pred_iso _ _).infinite_iff.mpr H;
+        have H := (Q.iso_left.pred_infinite_iff _).mp H;
+        rw [Q.iso_left.right_inv] at H
+        exact H,
     λH => @Infinite.of_injective _ _ H 
       (λ⟨b, Hb⟩ => ⟨Sum.inl b, Hb⟩) 
       (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
