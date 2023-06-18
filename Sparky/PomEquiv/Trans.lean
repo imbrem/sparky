@@ -882,6 +882,18 @@ def PomEquiv.trans_pom_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
       ⟨Sum.inr (Sum.inl e), True.intro⟩))
   := sorry
 
+def PomEquiv.trans_pom_mid_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
+  ↔ Infinite (α.pred ((P.trans_sub_src_iso Q).toFun ⟨Sum.inl b, H⟩))
+  := sorry
+
+def PomEquiv.trans_pom_mid_right_infinite_pred {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
+  ↔ Infinite (γ.pred ((P.trans_sub_tar_iso Q).toFun ⟨Sum.inl b, H⟩))
+  := sorry
+
 def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomReduct (P.trans_pom Q)
@@ -948,9 +960,12 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
       infinite_preserved := λe H =>
         match e with
         | ⟨Sum.inl e, He⟩ => 
-          have H := SubPom.univ_pred_pred_univ _ _ ▸ H;
-          have H := H;
-          sorry
+          have H := (SubPom.univ_pred_pred_univ 
+            (trans_pom P Q) 
+            ⟨Sum.inl e, True.intro⟩) ▸ H;
+          have H := (trans_pom_mid_left_infinite_pred P Q _ He).mp H;
+          have H := ((trans_sub_src_iso P Q).pred_infinite_iff _).mpr H;
+          (SubPom.pred_iso _ _).infinite_iff.mp H
         | ⟨Sum.inr (Sum.inl e), He⟩ => 
           have H := (SubPom.univ_pred_pred_univ 
             (trans_pom P Q) 
