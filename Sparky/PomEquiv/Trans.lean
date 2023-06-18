@@ -3,6 +3,7 @@ import Sparky.PomIso
 import Sparky.SubPom
 import Sparky.PomReduce
 import Sparky.PomEquiv.Basic
+import Sparky.Utils
 
 open Classical
 
@@ -957,7 +958,12 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_infinite {L} [Ticked L
   : Infinite (SubPom.inter 
     (trans_sub_mid_pom P Q) 
     (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inl e))))
-  := sorry
+  := @Infinite.of_injective _ _ H
+    (λ⟨b, Hb⟩ => ⟨Sum.inl b, True.intro, 
+      let ⟨_, _, Hbe⟩ := Hb;
+      Hbe
+      ⟩)
+    (λ⟨_, _⟩ ⟨_, _⟩ H => by cases H; rfl)
 
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_inner {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
