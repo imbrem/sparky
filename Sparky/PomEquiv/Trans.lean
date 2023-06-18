@@ -965,7 +965,14 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_finite {L} [Ticked L] 
         ) 
         Hb'
       ⟩)
-      sorry
+      (λ⟨a, Ha, Ha'⟩ ⟨b, Hb, Hb'⟩ => by 
+        rw [Subtype.mk_eq_mk]
+        rw [Sum.inl.inj_iff]
+        intro H
+        let H' := Q.iso_left.injective H;
+        cases H';
+        rfl
+      )
 
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_infinite {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
