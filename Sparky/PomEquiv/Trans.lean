@@ -1173,6 +1173,64 @@ def PomEquiv.trans_pom_left_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
       ⟨Sum.inr (Sum.inl e), True.intro⟩))
   := trans_pom_left_infinite_pred' P Q e
 
+theorem PomEquiv.trans_pom_right_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inr e))) 
+  ↔ Infinite (γ.pred (Q.iso_right.toFun ⟨e.val, e.property.left⟩))
+  := ⟨
+    λH => sorry,
+    -- UNINVERTED!
+    -- match trans_pom_pred_factor_infinite H with
+    -- | Or.inl H => trans_pom_left_mid_left_infinite_helper H
+    -- | Or.inr (Or.inl H) => @Infinite.of_injective _ _ H
+    --   (λ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ => ⟨
+    --     P.iso_left.toFun ⟨a, Ha⟩, 
+    --     P.iso_left.map_rel_iff.mpr Ha'
+    --   ⟩)
+    --   (λ
+    --     ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ 
+    --     ⟨Sum.inr (Sum.inl ⟨b, Hb, _⟩), _, Hb'⟩
+    --     => by 
+    --       intro H
+    --       rw [Subtype.mk_eq_mk] at H
+    --       simp only [
+    --         Equiv.toFun_as_coe_apply, 
+    --         RelIso.coe_toEquiv, 
+    --         EmbeddingLike.apply_eq_iff_eq
+    --       ] at H
+    --       cases H
+    --       rfl
+    --     )
+    -- | Or.inr (Or.inr H) => trans_pom_left_mid_left_infinite_helper
+    --   (trans_pom_right_left_mid_infinite_helper H),
+    λH => @Infinite.of_injective _ _ H 
+      (λ⟨a, Ha⟩ => ⟨
+        ((trans_sub_tar_iso P Q).invFun a).val, 
+        by
+          have H := (trans_sub_tar_iso P Q).left_inv ⟨(Sum.inr (Sum.inr e)), True.intro⟩;
+          have H := congr_arg Subtype.val H;
+          simp only [] at H
+          rw [<-H]
+          apply (trans_sub_tar_iso P Q).symm.map_rel_iff.mpr
+          exact Ha
+        ⟩)
+      (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by 
+        rw [Subtype.mk_eq_mk] at H
+        have H := Subtype.eq H
+        simp at H
+        cases H
+        rfl
+      )
+  ⟩
+
+def PomEquiv.trans_pom_right_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (e)
+  : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inr e))) 
+  ↔ Infinite 
+    (γ.pred ((trans_sub_tar_iso P Q).toFun 
+      ⟨Sum.inr (Sum.inr e), True.intro⟩))
+  := trans_pom_right_infinite_pred' P Q e
+
 def PomEquiv.trans_pom_mid_left_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
@@ -1331,11 +1389,10 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
                     e''.val, 
                     ⟨True.intro, 
                       match e'' with
-                      | ⟨Sum.inl e'', _⟩ => sorry
-                        -- UNINVERTED!
-                        -- have H := (P.trans_tar_invFun_eq_mid Q _ _ _).mp H;
-                        -- have H := H ▸ (Q.right_shared_pred' _ _ p.left).mp He';
-                        -- (P.trans_le_mid_right Q _ _).mpr H
+                      | ⟨Sum.inl e'', _⟩ =>
+                        have H := (P.trans_src_invFun_eq_mid Q _ _ _).mp H;
+                        have H := H ▸ (P.left_shared_pred' _ _ p.left).mp He';
+                        (P.trans_le_mid_left Q _ _).mpr H
                       | ⟨Sum.inr (Sum.inl ⟨e'', He'''⟩), _⟩ => sorry
                         -- UNINVERTED!
                         -- have H := (P.trans_tar_invFun_eq_right' Q _ _ _).mp H;
@@ -1366,11 +1423,9 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
           have H := (SubPom.univ_pred_pred_univ 
             (trans_pom P Q) 
             ⟨Sum.inr (Sum.inr e), True.intro⟩) ▸ H;
-            sorry
-          -- UNINVERTED:
-          -- have H := (trans_pom_left_infinite_pred'' P Q _).mp H;
-          -- have H := ((trans_sub_src_iso P Q).pred_infinite_iff _).mpr H;
-          -- (SubPom.pred_iso _ _).infinite_iff.mp H,
+          have H := (trans_pom_right_infinite_pred'' P Q _).mp H;
+          have H := ((trans_sub_tar_iso P Q).pred_infinite_iff _).mpr H;
+          (SubPom.pred_iso _ _).infinite_iff.mp H,
       infinite_shared := λH => 
           (P.trans_sub_tar_iso Q).infinite_iff.mpr 
           ((P.trans_pom_right_infinite Q).mp (
