@@ -1028,6 +1028,18 @@ theorem PomEquiv.trans_pom_mid_left_infinite_pred'' {L} [Ticked L] {α β γ: Po
     ]
     rfl
 
+theorem PomEquiv.trans_pom_mid_right_infinite_pred'' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
+  ↔ Infinite (Q.reduce_left.shared.pred (Q.iso_left.invFun b))
+  := by
+    rw [
+      trans_pom_mid_infinite_pred' P Q b,
+      Q.iso_left.symm.pred_infinite_iff _,
+      (SubPom.pred_iso Q.reduce_left.shared _).infinite_iff
+    ]
+    rfl
+
 theorem PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
@@ -1037,6 +1049,20 @@ theorem PomEquiv.trans_pom_mid_left_infinite_pred' {L} [Ticked L] {α β γ: Pom
       trans_pom_mid_left_infinite_pred'' P Q b,
       <-(SubPom.pred_iso _ _).infinite_iff,
       <-P.reduce_right.is_reduct.pred_infinite_iff',
+      (SubPom.pred_iso _ _).infinite_iff,
+      SubPom.univ_pred_pred_univ
+    ]
+
+
+theorem PomEquiv.trans_pom_mid_right_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier)
+  : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
+  ↔ Infinite (Q.shared.pred (Q.iso_left.invFun b).val)
+  := by
+    rw [
+      trans_pom_mid_right_infinite_pred'' P Q b,
+      <-(SubPom.pred_iso _ _).infinite_iff,
+      <-Q.reduce_left.is_reduct.pred_infinite_iff',
       (SubPom.pred_iso _ _).infinite_iff,
       SubPom.univ_pred_pred_univ
     ]
@@ -1290,7 +1316,16 @@ def PomEquiv.trans_pom_mid_right_infinite_pred {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (H)
   : Infinite ((P.trans_pom Q).pred (Sum.inl b)) 
   ↔ Infinite (γ.pred ((P.trans_sub_tar_iso Q).toFun ⟨Sum.inl b, H⟩))
-  := sorry
+  := by 
+    rw [
+      trans_pom_mid_right_infinite_pred' P Q b,
+      <-Q.iso_right.pred_infinite_iff',
+      <-Q.reduce_right.is_reduct.pred_infinite_iff',
+      (SubPom.pred_iso _ _).infinite_iff,
+      SubPom.univ_pred_pred_univ
+    ]
+    simp only [trans_sub_tar_iso, trans_tar_toFun]
+    rw [Q.iso_right.left_inv]
 
 def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
