@@ -37,6 +37,13 @@ def PomEquiv.trans_le_mid {L} [Ticked L] {α β γ: Pom L}
   : @trans_le L _ α β γ P Q (Sum.inl l) (Sum.inl r) ↔ β.order.le l r
   := by rfl
 
+def PomEquiv.trans_le_left {L} [Ticked L] {α β γ: Pom L} 
+  (P: PomEquiv α β) (Q: PomEquiv β γ)
+  (l) (r)
+  : @trans_le L _ α β γ P Q (Sum.inr (Sum.inl l)) (Sum.inr (Sum.inl r)) 
+  ↔ P.shared.order.le l.val r.val
+  := by rfl
+
 def PomEquiv.trans_le_right {L} [Ticked L] {α β γ: Pom L} 
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   (l) (r)
@@ -845,6 +852,39 @@ theorem PomEquiv.trans_tar_invFun_eq_right' {L} [Ticked L] {α β γ: Pom L}
           rw [Sum.inr.inj_iff]
           rw [Subtype.mk_eq_mk]
 
+
+theorem PomEquiv.trans_sub_invFun_eq_left' {L} [Ticked L] {α β γ: Pom L}
+  (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (Hr) (a: α.carrier)
+  : ⟨Sum.inr (Sum.inl r), Hr⟩ = (P.trans_src_invFun Q a)
+  ↔ r.val = (P.iso_left.invFun a).val
+  := by
+    simp only [Set.Mem, Membership.mem, trans_sub_tar_pom] at Hr 
+    simp only [trans_src_invFun]
+    generalize Hqa: P.iso_left.invFun a = qa;
+    cases qa
+    simp only []
+    split
+    case inl H =>
+      exact ⟨
+        (λH => by cases H),
+        λH' => by
+          apply False.elim
+          cases r with
+          | mk r Hr =>
+            sorry
+            -- have ⟨Hr, Hr'⟩ := Hr;
+            -- apply Hr'
+            -- rw [<-H'] at H
+            -- exact H
+      ⟩  
+    case inr H => 
+      cases r with
+      | mk r Hr =>
+        rw [Subtype.mk_eq_mk]
+        rw [Sum.inr.inj_iff]
+        rw [Sum.inl.inj_iff]
+        rw [Subtype.mk_eq_mk]
+
 noncomputable def PomEquiv.trans_sub_tar_iso {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ)
   : PomIso (P.trans_sub_tar_pom Q) γ
@@ -1393,11 +1433,10 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
                         have H := (P.trans_src_invFun_eq_mid Q _ _ _).mp H;
                         have H := H ▸ (P.left_shared_pred' _ _ p.left).mp He';
                         (P.trans_le_mid_left Q _ _).mpr H
-                      | ⟨Sum.inr (Sum.inl ⟨e'', He'''⟩), _⟩ => sorry
-                        -- UNINVERTED!
-                        -- have H := (P.trans_tar_invFun_eq_right' Q _ _ _).mp H;
-                        -- have H := H.symm ▸ (Q.right_shared_pred' _ _ p.left).mp He';
-                        -- (P.trans_le_right Q _ _).mpr H
+                      | ⟨Sum.inr (Sum.inl ⟨e'', He'''⟩), _⟩ =>
+                        have H := (P.trans_sub_invFun_eq_left' Q _ _ _).mp H;
+                        have H := H.symm ▸ (P.left_shared_pred' _ _ p.left).mp He';
+                        (P.trans_le_left Q _ _).mpr H
                     ⟩
                   ⟩) 
                 (λ⟨a, Ha⟩ ⟨b, Hb⟩ => by {
