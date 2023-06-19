@@ -1094,6 +1094,33 @@ theorem PomEquiv.trans_pom_left_mid_left_infinite_helper {L} [Ticked L] {α β �
             rfl
         )
 
+theorem PomEquiv.trans_pom_right_mid_right_infinite_helper {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
+  (H: Infinite (SubPom.inter 
+    (trans_sub_mid_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inr e)))))
+  : Infinite (γ.pred (Q.iso_right.toFun ⟨e.val, e.property.left⟩))
+  := by
+      rw [<-Q.iso_right.pred_infinite_iff]
+      rw [<-Q.reduce_right.is_reduct.pred_infinite_iff']
+      exact @Infinite.of_injective _ _ H
+        (λ⟨Sum.inl b, _, Hb'⟩ => 
+          ⟨⟨(Q.iso_left.invFun b).val, True.intro⟩, Hb'⟩)
+        (λ⟨Sum.inl a, Ha, Ha'⟩ ⟨Sum.inl b, Hb, Hb'⟩ H => 
+          by 
+            rw [Subtype.mk_eq_mk] at H
+            simp only [Equiv.invFun_as_coe] at H 
+            rw [Subtype.mk_eq_mk] at H
+            have H := Subtype.eq H
+            simp only [
+              Equiv.toFun_as_coe_apply, 
+              RelIso.coe_toEquiv, 
+              EmbeddingLike.apply_eq_iff_eq
+            ] at H
+            cases H
+            rfl
+        )
+
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_finite {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
   (I: Infinite { c: Q.shared.carrier // ∃b: β.carrier,   
@@ -1138,6 +1165,50 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_finite {L} [Ticked L] 
         rfl
       )
 
+theorem PomEquiv.trans_pom_left_right_mid_infinite_helper_finite {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
+  (I: Infinite { a: P.shared.carrier // ∃b: β.carrier,   
+    P.shared.order.le a (P.iso_right.invFun b).val ∧
+    Q.shared.order.le (Q.iso_left.invFun b).val e.val
+  })
+  (F: Finite { b: β.carrier // ∃a: P.shared.carrier,  
+    P.shared.order.le a (P.iso_right.invFun b).val ∧
+    Q.shared.order.le (Q.iso_left.invFun b).val e.val
+  })
+  : Infinite (SubPom.inter 
+    (trans_sub_mid_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inr e))))
+  := 
+    let ⟨b, Hb⟩ := binary_predicate_pigeonhole _ I F;
+    have ⟨_, _, Hb'⟩ := Hb.nonempty;
+    have H := 
+      (P.reduce_right.is_reduct.pred_infinite_iff 
+      (P.iso_right.invFun b)).mp (
+        @Infinite.of_injective _ _ Hb
+          (λ⟨a, Ha⟩ => ⟨a, True.intro, Ha.left⟩)
+          (λ⟨_, _⟩ ⟨_, _⟩ H => by cases H; rfl)
+      )
+    @Infinite.of_injective _ _ H
+      (λ⟨q, Hq, Hq'⟩ => ⟨
+        Sum.inl (P.iso_right.toFun ⟨q, Hq⟩), True.intro, 
+        Q.shared.order.le_trans _ _ _ (
+          Q.iso_left.symm.map_rel_iff.mpr (by
+            rw [<-P.iso_right.right_inv b]
+            apply P.iso_right.map_rel_iff.mpr
+            exact Hq'
+          )
+        ) 
+        Hb'
+      ⟩)
+      (λ⟨a, Ha, Ha'⟩ ⟨b, Hb, Hb'⟩ => by 
+        rw [Subtype.mk_eq_mk]
+        rw [Sum.inl.inj_iff]
+        intro H
+        let H' := P.iso_right.injective H;
+        cases H';
+        rfl
+      )
+
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_infinite {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
   (H: Infinite { b: β.carrier // ∃c: Q.shared.carrier,  
@@ -1147,6 +1218,22 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_infinite {L} [Ticked L
   : Infinite (SubPom.inter 
     (trans_sub_mid_pom P Q) 
     (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inl e))))
+  := @Infinite.of_injective _ _ H
+    (λ⟨b, Hb⟩ => ⟨Sum.inl b, True.intro, 
+      let ⟨_, _, Hbe⟩ := Hb;
+      Hbe
+      ⟩)
+    (λ⟨_, _⟩ ⟨_, _⟩ H => by cases H; rfl)
+
+theorem PomEquiv.trans_pom_left_right_mid_infinite_helper_infinite {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
+  (H: Infinite { b: β.carrier // ∃a: P.shared.carrier,  
+    P.shared.order.le a (P.iso_right.invFun b).val ∧
+    Q.shared.order.le (Q.iso_left.invFun b).val e.val
+  })
+  : Infinite (SubPom.inter 
+    (trans_sub_mid_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inr e))))
   := @Infinite.of_injective _ _ H
     (λ⟨b, Hb⟩ => ⟨Sum.inl b, True.intro, 
       let ⟨_, _, Hbe⟩ := Hb;
@@ -1167,6 +1254,19 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper_inner {L} [Ticked L] {
   | Or.inl H' => trans_pom_right_left_mid_infinite_helper_finite H H'
   | Or.inr H => trans_pom_right_left_mid_infinite_helper_infinite H
 
+theorem PomEquiv.trans_pom_left_right_mid_infinite_helper_inner {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
+  (H: Infinite { a: P.shared.carrier // ∃b: β.carrier,  
+    P.shared.order.le a (P.iso_right.invFun b).val ∧
+    Q.shared.order.le (Q.iso_left.invFun b).val e.val
+  })
+  : Infinite (SubPom.inter 
+    (trans_sub_mid_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inr e))))
+  := match finite_or_infinite _ with
+  | Or.inl H' => trans_pom_left_right_mid_infinite_helper_finite H H'
+  | Or.inr H => trans_pom_left_right_mid_infinite_helper_infinite H
+
 theorem PomEquiv.trans_pom_right_left_mid_infinite_helper {L} [Ticked L] {α β γ: Pom L}
   {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
   (H: Infinite (SubPom.inter 
@@ -1180,6 +1280,22 @@ theorem PomEquiv.trans_pom_right_left_mid_infinite_helper {L} [Ticked L] {α β 
       (λ⟨Sum.inr (Sum.inr ⟨c, _⟩), _, Hc'⟩ => ⟨c, Hc'⟩)
       (λ⟨Sum.inr (Sum.inr ⟨_, _⟩), _, _⟩ 
         ⟨Sum.inr (Sum.inr ⟨_, _⟩), _, _⟩ H 
+        => by cases H; rfl)
+    )
+
+theorem PomEquiv.trans_pom_left_right_mid_infinite_helper {L} [Ticked L] {α β γ: Pom L}
+  {P: PomEquiv α β} {Q: PomEquiv β γ} {e}
+  (H: Infinite (SubPom.inter 
+    (trans_sub_left_rem_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inr e)))))
+  : Infinite (SubPom.inter 
+    (trans_sub_mid_pom P Q) 
+    (Pom.pred (trans_pom P Q) (Sum.inr (Sum.inr e))))
+  := trans_pom_left_right_mid_infinite_helper_inner 
+    (@Infinite.of_injective _ _ H 
+      (λ⟨Sum.inr (Sum.inl ⟨c, _⟩), _, Hc'⟩ => ⟨c, Hc'⟩)
+      (λ⟨Sum.inr (Sum.inl ⟨_, _⟩), _, _⟩ 
+        ⟨Sum.inr (Sum.inl ⟨_, _⟩), _, _⟩ H 
         => by cases H; rfl)
     )
 
@@ -1244,31 +1360,29 @@ theorem PomEquiv.trans_pom_right_infinite_pred' {L} [Ticked L] {α β γ: Pom L}
   : Infinite ((P.trans_pom Q).pred (Sum.inr (Sum.inr e))) 
   ↔ Infinite (γ.pred (Q.iso_right.toFun ⟨e.val, e.property.left⟩))
   := ⟨
-    λH => sorry,
-    -- UNINVERTED!
-    -- match trans_pom_pred_factor_infinite H with
-    -- | Or.inl H => trans_pom_left_mid_left_infinite_helper H
-    -- | Or.inr (Or.inl H) => @Infinite.of_injective _ _ H
-    --   (λ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ => ⟨
-    --     P.iso_left.toFun ⟨a, Ha⟩, 
-    --     P.iso_left.map_rel_iff.mpr Ha'
-    --   ⟩)
-    --   (λ
-    --     ⟨Sum.inr (Sum.inl ⟨a, Ha, _⟩), _, Ha'⟩ 
-    --     ⟨Sum.inr (Sum.inl ⟨b, Hb, _⟩), _, Hb'⟩
-    --     => by 
-    --       intro H
-    --       rw [Subtype.mk_eq_mk] at H
-    --       simp only [
-    --         Equiv.toFun_as_coe_apply, 
-    --         RelIso.coe_toEquiv, 
-    --         EmbeddingLike.apply_eq_iff_eq
-    --       ] at H
-    --       cases H
-    --       rfl
-    --     )
-    -- | Or.inr (Or.inr H) => trans_pom_left_mid_left_infinite_helper
-    --   (trans_pom_right_left_mid_infinite_helper H),
+    λH => match trans_pom_pred_factor_infinite H with
+    | Or.inl H => trans_pom_right_mid_right_infinite_helper H
+    | Or.inr (Or.inl H) => trans_pom_right_mid_right_infinite_helper
+      (trans_pom_left_right_mid_infinite_helper H)
+    | Or.inr (Or.inr H) => @Infinite.of_injective _ _ H
+      (λ⟨Sum.inr (Sum.inr ⟨a, Ha, _⟩), _, Ha'⟩ => ⟨
+        Q.iso_right.toFun ⟨a, Ha⟩, 
+        Q.iso_right.map_rel_iff.mpr Ha'
+      ⟩)
+      (λ
+        ⟨Sum.inr (Sum.inr ⟨a, Ha, _⟩), _, Ha'⟩ 
+        ⟨Sum.inr (Sum.inr ⟨b, Hb, _⟩), _, Hb'⟩
+        => by 
+          intro H
+          rw [Subtype.mk_eq_mk] at H
+          simp only [
+            Equiv.toFun_as_coe_apply, 
+            RelIso.coe_toEquiv, 
+            EmbeddingLike.apply_eq_iff_eq
+          ] at H
+          cases H
+          rfl
+        ),
     λH => @Infinite.of_injective _ _ H 
       (λ⟨a, Ha⟩ => ⟨
         ((trans_sub_tar_iso P Q).invFun a).val, 
