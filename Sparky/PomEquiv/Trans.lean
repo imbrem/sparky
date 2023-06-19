@@ -739,7 +739,7 @@ theorem PomEquiv.trans_tar_right_inv [Ticked L] {α β γ: Pom L}
 --   ↔ r.val = (Q.iso_right.invFun c).val
 --   := sorry
 
-theorem PomEquiv.trans_src_invFun_eq_mid' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_src_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (Hb) (a: α.carrier)
   : ⟨Sum.inl b, Hb⟩ = (P.trans_src_invFun Q a)
   ↔ (P.iso_right.invFun b).val = (P.iso_left.invFun a).val
@@ -776,7 +776,7 @@ theorem PomEquiv.trans_src_invFun_eq_mid' {L} [Ticked L] {α β γ: Pom L}
           exact H''
       ⟩  
 
-theorem PomEquiv.trans_tar_invFun_eq_mid' {L} [Ticked L] {α β γ: Pom L}
+theorem PomEquiv.trans_tar_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (Hb) (c: γ.carrier)
   : ⟨Sum.inl b, Hb⟩ = (P.trans_tar_invFun Q c)
   ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
@@ -1239,7 +1239,7 @@ def PomEquiv.trans_sub_src {L} [Ticked L] {α β γ: Pom L}
                     ⟨True.intro, 
                       match e'' with
                       | ⟨Sum.inl e'', _⟩ =>
-                        have H := (P.trans_tar_invFun_eq_mid' Q _ _ _).mp H;
+                        have H := (P.trans_tar_invFun_eq_mid Q _ _ _).mp H;
                         have H := H ▸ (Q.right_shared_pred' _ _ p.left).mp He';
                         (P.trans_le_mid_right Q _ _).mpr H
                       | ⟨Sum.inr (Sum.inr ⟨e'', He'''⟩), _⟩ => 
@@ -1333,7 +1333,7 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
                       match e'' with
                       | ⟨Sum.inl e'', _⟩ => sorry
                         -- UNINVERTED!
-                        -- have H := (P.trans_tar_invFun_eq_mid' Q _ _ _).mp H;
+                        -- have H := (P.trans_tar_invFun_eq_mid Q _ _ _).mp H;
                         -- have H := H ▸ (Q.right_shared_pred' _ _ p.left).mp He';
                         -- (P.trans_le_mid_right Q _ _).mpr H
                       | ⟨Sum.inr (Sum.inl ⟨e'', He'''⟩), _⟩ => sorry
