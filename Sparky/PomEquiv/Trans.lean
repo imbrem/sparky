@@ -1280,12 +1280,61 @@ def PomEquiv.trans_sub_tar {L} [Ticked L] {α β γ: Pom L}
               (λ⟨a, Ha⟩ ⟨b, Hb⟩ H => by cases H; rfl)
           ))
           | Or.inr p => Or.inr (Or.inr ((Q.left_action_eq _) ▸ p))
-        | Sum.inr (Sum.inl e) => sorry --TODO: rem theorem
+        | Sum.inr (Sum.inl ⟨e, p⟩) =>           
+          match P.left_rem_char _ p.right with
+          | Or.inl q => Or.inr (Or.inl (
+            by {
+              have q := P.reduce_left.is_reduct.infinite_preserved ⟨e, p.left⟩ q;
+              rw [<-(SubPom.pred_iso _ _).infinite_iff] at q;
+              have q := (P.iso_left.pred_infinite_iff _).mp q;
+              exact @Infinite.of_injective _ _ q 
+                (λ⟨e', He'⟩ => 
+                let e'' :=  (P.trans_sub_src_iso Q).symm.toFun  e';
+                have H: e'' = P.trans_src_invFun Q e' := rfl;
+                  ⟨
+                    e''.val, 
+                    ⟨True.intro, 
+                      match e'' with
+                      | ⟨Sum.inl e'', _⟩ => sorry
+                        -- UNINVERTED!
+                        -- have H := (P.trans_tar_invFun_eq_mid' Q _ _ _).mp H;
+                        -- have H := H ▸ (Q.right_shared_pred' _ _ p.left).mp He';
+                        -- (P.trans_le_mid_right Q _ _).mpr H
+                      | ⟨Sum.inr (Sum.inl ⟨e'', He'''⟩), _⟩ => sorry
+                        -- UNINVERTED!
+                        -- have H := (P.trans_tar_invFun_eq_right' Q _ _ _).mp H;
+                        -- have H := H.symm ▸ (Q.right_shared_pred' _ _ p.left).mp He';
+                        -- (P.trans_le_right Q _ _).mpr H
+                    ⟩
+                  ⟩) 
+                (λ⟨a, Ha⟩ ⟨b, Hb⟩ => by {
+                  rw [Subtype.mk_eq_mk, Subtype.mk_eq_mk]
+                  apply Function.Injective.comp
+                  apply Subtype.val_injective
+                  apply Equiv.injective
+                })
+            }
+          ))
+          | Or.inr p => Or.inr (Or.inr p)
         | Sum.inr (Sum.inr e) => Or.inl True.intro,
-      infinite_preserved := λe =>
+      infinite_preserved := λe H =>
         match e with
-        | ⟨Sum.inl e, He⟩ => sorry
-        | ⟨Sum.inr (Sum.inr e), He⟩ => sorry,
+        | ⟨Sum.inl e, He⟩ => 
+          have H := (SubPom.univ_pred_pred_univ 
+            (trans_pom P Q) 
+            ⟨Sum.inl e, True.intro⟩) ▸ H;
+          have H := (trans_pom_mid_right_infinite_pred P Q _ He).mp H;
+          have H := ((trans_sub_tar_iso P Q).pred_infinite_iff _).mpr H;
+          (SubPom.pred_iso _ _).infinite_iff.mp H
+        | ⟨Sum.inr (Sum.inr e), He⟩ => 
+          have H := (SubPom.univ_pred_pred_univ 
+            (trans_pom P Q) 
+            ⟨Sum.inr (Sum.inr e), True.intro⟩) ▸ H;
+            sorry
+          -- UNINVERTED:
+          -- have H := (trans_pom_left_infinite_pred'' P Q _).mp H;
+          -- have H := ((trans_sub_src_iso P Q).pred_infinite_iff _).mpr H;
+          -- (SubPom.pred_iso _ _).infinite_iff.mp H,
       infinite_shared := λH => 
           (P.trans_sub_tar_iso Q).infinite_iff.mpr 
           ((P.trans_pom_right_infinite Q).mp (
