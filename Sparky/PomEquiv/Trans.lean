@@ -871,11 +871,11 @@ theorem PomEquiv.trans_sub_invFun_eq_left' {L} [Ticked L] {α β γ: Pom L}
           apply False.elim
           cases r with
           | mk r Hr =>
-            sorry
-            -- have ⟨Hr, Hr'⟩ := Hr;
-            -- apply Hr'
-            -- rw [<-H'] at H
-            -- exact H
+            cases Hr
+            have ⟨Hr, Hr'⟩ := Hr
+            apply Hr'
+            rw [<-H'] at H
+            exact H
       ⟩  
     case inr H => 
       cases r with
