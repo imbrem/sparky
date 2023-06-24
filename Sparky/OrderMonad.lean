@@ -75,7 +75,26 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
             Hy,
             rfl
           ⟩,
-      sorry
+      λ⟨X, ⟨⟨⟨f, Ef⟩, Hf⟩, Hp⟩⟩ => by
+        cases Hf
+        have ⟨Y, ⟨⟨Hy, HY⟩, Hp⟩⟩ := Hp
+        cases HY
+        have ⟨⟨x, Ex⟩, Hb, HB⟩ := Hp 
+        cases HB
+        have ⟨⟨y, Ey⟩, Hb', Heb'⟩ := Hp
+        have ⟨⟨z, Ez⟩, Hz, Hez⟩ := Hy
+        cases Hez
+        cases x <;>
+        cases y <;>
+        cases z <;>
+        exact Set.mem_iUnion.mpr ⟨ 
+          _,
+          Set.mem_iUnion.mpr ⟨
+            Hz, 
+            Set.mem_setOf.mpr 
+            ⟨_, Hb, rfl⟩
+          ⟩
+        ⟩
     ⟩
     ,
   seqRight_eq := λA B => sorry,
