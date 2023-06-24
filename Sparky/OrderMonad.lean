@@ -59,7 +59,7 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
       λHA => ⟨⟨a, Ea⟩, HA, by cases a <;> rfl⟩
     ⟩
   ,
-  seqLeft_eq := λA B => Set.ext λ⟨p, Ep⟩ => ⟨
+  seqLeft_eq := λA B => Set.ext λ_ => ⟨
       λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => by
           cases Hx
           have ⟨Y, ⟨Hx, Hy⟩, HY⟩ := HX
@@ -97,10 +97,44 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
         ⟩
     ⟩
     ,
-  seqRight_eq := λA B => sorry,
-  pure_seq := λf A => sorry,
-  bind_pure_comp := λf A => sorry,
-  bind_map := λf A => sorry,
-  pure_bind := λa f => sorry,
-  bind_assoc := λA f g => sorry
+  seqRight_eq := λA B => Set.ext λ⟨p, Ep⟩ => ⟨ 
+    λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => sorry,
+    λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => sorry
+  ⟩,
+  pure_seq := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
+    λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => by
+      cases Hx
+      have ⟨Y, ⟨Hx, Hx'⟩, Hy⟩ := HX
+      cases Hx
+      cases Hx'
+      have ⟨z, Hz, Hz'⟩ := Hy;
+      cases Hz'
+      exact ⟨_, Hz, by simp [Seq.seq, SeqRight.seqRight]⟩,
+    λ⟨⟨x, Ex⟩, HA, HX⟩ => by
+      cases HX
+      exact Set.mem_iUnion.mpr ⟨ 
+          _,
+          Set.mem_iUnion.mpr ⟨
+            rfl, 
+            Set.mem_setOf.mpr 
+            ⟨_, HA, by simp [Seq.seq, SeqRight.seqRight]⟩
+          ⟩
+        ⟩
+  ⟩,
+  bind_pure_comp := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
+    λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => sorry,
+    λ⟨X, Hx, HX⟩ => sorry
+  ⟩,
+  bind_map := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
+    sorry,
+    sorry
+  ⟩,
+  pure_bind := λa f => Set.ext λ⟨p, Ep⟩ => ⟨
+    sorry,
+    sorry
+  ⟩,
+  bind_assoc := λA f g => Set.ext λ⟨p, Ep⟩ => ⟨
+    sorry,
+    sorry
+  ⟩
 }
