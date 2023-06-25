@@ -165,7 +165,13 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
       cases Hz'
       exact ⟨_, Hx, by cases x <;> cases Hz <;> simp⟩
     ,
-    λ⟨X, Hx, HX⟩ => sorry
+    λ⟨⟨x, Ex⟩, Hx, HX⟩ => by
+      cases HX
+      exact ⟨_, 
+        ⟨(x, Ex), rfl⟩, _, 
+        ⟨Hx, rfl⟩, 
+        by cases x <;> exact ⟨_, rfl, by simp⟩
+      ⟩ 
   ⟩,
   bind_map := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
     sorry,
