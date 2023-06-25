@@ -157,7 +157,14 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
         ⟩
   ⟩,
   bind_pure_comp := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
-    λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => sorry,
+    λ⟨X, ⟨⟨x, Ex⟩, Hx⟩, HX⟩ => by
+      cases Hx
+      have ⟨Y, ⟨Hx, Hx'⟩, Hy⟩ := HX
+      cases Hx'
+      have ⟨⟨z, Ez⟩, Hz, Hz'⟩ := Hy
+      cases Hz'
+      exact ⟨_, Hx, by cases x <;> cases Hz <;> simp⟩
+    ,
     λ⟨X, Hx, HX⟩ => sorry
   ⟩,
   bind_map := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
