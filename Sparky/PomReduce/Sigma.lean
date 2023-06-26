@@ -12,7 +12,11 @@ def SubPomReduces.sigma
     subset := λ⟨n, e⟩ Hs => (H n).subset Hs,
     infinite_or_tick := λ⟨⟨n, e⟩, Hs⟩ => match (H n).infinite_or_tick ⟨e, Hs⟩ with
     | Or.inl Hi => Or.inl Hi
-    | Or.inr (Or.inl Hi) => Or.inr (Or.inl sorry)
+    | Or.inr (Or.inl Hi) => Or.inr (Or.inl (
+      @Infinite.of_injective _ _ Hi 
+        (λ⟨p, Hsp, Hep⟩  => ⟨⟨n, p⟩, Hsp, Sigma.Lex.right _ _ Hep⟩) 
+        (λ⟨_, _, _⟩ ⟨_, _, _⟩ H => by cases H; rfl)
+    ))
     | Or.inr (Or.inr Hi) => Or.inr (Or.inr Hi)
     ,
     infinite_preserved := sorry,
