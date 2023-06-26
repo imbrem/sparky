@@ -247,3 +247,26 @@ theorem SubPom.order_mk_char' {L} {α: Pom L} {ρ: SubPom α}
   (Ha Hb)
   : ρ.toPom.order.le ⟨a, Ha⟩ ⟨b, Hb⟩ ↔ α.order.le a b
   := by rfl
+
+def SubPom.sigma_iso {L} {N: Type} [PartialOrder N]
+  {F: N -> Pom L} (SF: (n: N) -> SubPom (F n))
+  : PomIso (SubPom.sigma SF) (Pom.sigma (λn => (SF n).toPom))
+  := {
+    toFun := λ⟨⟨n, e⟩, H⟩ => ⟨n, e, H⟩,
+    invFun := λ⟨n, e, H⟩ => ⟨⟨n, e⟩, H⟩,
+    left_inv := λ⟨⟨_, _⟩, _⟩ => rfl,
+    right_inv := λ⟨_, _, _⟩ => rfl,
+    map_rel_iff' := λ{A B} => match A, B with 
+      | ⟨⟨_, _⟩, _⟩, ⟨⟨_, _⟩, _⟩ => ⟨ 
+        λH => by
+          cases H with
+          | left x y Hi => exact Sigma.Lex.left _ _ Hi
+          | right x y Hx => exact Sigma.Lex.right _ _ Hx 
+        ,
+        λH => by
+          cases H with
+          | left x y Hi => exact Sigma.Lex.left _ _ Hi
+          | right x y Hx => exact Sigma.Lex.right _ _ Hx 
+      ⟩,
+    action_eq := rfl
+  }

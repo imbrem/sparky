@@ -9,11 +9,8 @@ def PomEquiv.sigma
   : PomEquiv (Pom.sigma F) (Pom.sigma G)
   := {
     shared := Pom.sigma (λn => (E n).shared),
-    reduce_left := {
-      shared := sorry,
-      is_reduct := sorry
-    },
-    reduce_right := sorry,
+    reduce_left := PomReduct.sigma (λn => (E n).reduce_left),
+    reduce_right := PomReduct.sigma (λn => (E n).reduce_right),
     iso_left := sorry,
     iso_right := sorry
   }
