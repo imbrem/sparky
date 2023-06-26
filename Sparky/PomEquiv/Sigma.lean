@@ -18,3 +18,33 @@ def PomEquiv.sigma
       (SubPom.sigma_iso (λn => (E n).reduce_right.shared)) 
       (PomIso.sigma (λn => (E n).iso_right))
   }
+
+def PomEquiv.seq
+  {L} [Ticked L]
+  {α α': Pom L}
+  (Eα: PomEquiv α α')
+  {β β': Pom L}
+  (Eβ: PomEquiv β β')
+  : PomEquiv (α.seq β) (α'.seq β')
+  := {
+    shared := Eα.shared.seq Eβ.shared,
+    reduce_left := sorry,
+    reduce_right := sorry,
+    iso_left := sorry,
+    iso_right := sorry
+  }
+
+def PomEquiv.par
+  {L} [Ticked L]
+  {α α': Pom L}
+  (Eα: PomEquiv α α')
+  {β β': Pom L}
+  (Eβ: PomEquiv β β')
+  : PomEquiv (α.par β) (α'.par β')
+  := {
+    shared := Eα.shared.par Eβ.shared,
+    reduce_left := sorry,
+    reduce_right := sorry,
+    iso_left := sorry,
+    iso_right := sorry
+  }
