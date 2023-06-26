@@ -44,6 +44,11 @@ def SubPom.sigma {L} {N: Type} [PartialOrder N]
   : SubPom (Pom.sigma F)
   := ⟨ λ⟨n, e⟩ => (SF n).contains e ⟩
 
+def SubPom.sigma_true {L} {N: Type} [PartialOrder N]
+  (F: N -> Pom L)
+  : SubPom.sigma (λn: N => SubPom.univ (F n)) = SubPom.univ (Pom.sigma F)
+  := rfl
+
 def SubPom.seq {L} {A B: Pom L} (SA: SubPom A) (SB: SubPom B)
   : SubPom (A.seq B)
   := ⟨ Sum.elim SA.contains SB.contains ⟩
