@@ -128,7 +128,14 @@ def PomEquiv.left_shared_pred {L} [Ticked L] {α β: Pom L}
   (P: PomEquiv α β) (e: α.carrier) (p: P.reduce_left.shared.carrier) 
   : α.order.le e (P.iso_left.toFun p) 
   ↔ P.reduce_left.shared.order.le (P.iso_left.invFun e) p 
-  := sorry
+  := by
+    --TODO: clean this up...
+    have He: e = P.iso_left.toFun (P.iso_left.invFun e) := by simp
+    rw [He]
+    simp only [Equiv.invFun_as_coe, Equiv.toFun_as_coe_apply, RelIso.coe_toEquiv]
+    rw [P.iso_left.map_rel_iff]
+    simp only [Equiv.invFun_as_coe, Equiv.toFun_as_coe_apply, RelIso.coe_toEquiv] at He
+    rw [<-He]
 
 def PomEquiv.right_shared_pred {L} [Ticked L] {α β: Pom L}
   (P: PomEquiv α β) (e: β.carrier) (p: P.reduce_right.shared.carrier) 
