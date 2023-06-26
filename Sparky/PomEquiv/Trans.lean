@@ -734,18 +734,6 @@ theorem PomEquiv.trans_tar_right_inv [Ticked L] {α β γ: Pom L}
             ]
       }
 
--- theorem PomEquiv.trans_tar_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
---   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (c: γ.carrier)
---   : Sum.inl b = (P.trans_tar_invFun Q c).val
---   ↔ (Q.iso_left.invFun b).val = (Q.iso_right.invFun c).val
---   := sorry
-
--- theorem PomEquiv.trans_tar_invFun_eq_right {L} [Ticked L] {α β γ: Pom L}
---   (P: PomEquiv α β) (Q: PomEquiv β γ) (r) (c: γ.carrier)
---   : Sum.inr (Sum.inr r) = (P.trans_tar_invFun Q c).val
---   ↔ r.val = (Q.iso_right.invFun c).val
---   := sorry
-
 theorem PomEquiv.trans_src_invFun_eq_mid {L} [Ticked L] {α β γ: Pom L}
   (P: PomEquiv α β) (Q: PomEquiv β γ) (b: β.carrier) (Hb) (a: α.carrier)
   : ⟨Sum.inl b, Hb⟩ = (P.trans_src_invFun Q a)
