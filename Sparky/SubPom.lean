@@ -270,3 +270,11 @@ def SubPom.sigma_iso {L} {N: Type} [PartialOrder N]
       ⟩,
     action_eq := rfl
   }
+
+def SubPom.sigma_empty {L} {N: Type} [PartialOrder N]
+  {F: N -> Pom L} (SF: (n: N) -> SubPom (F n))
+  : IsEmpty (SubPom.sigma SF) ↔ ∀(n: N), IsEmpty (SF n)
+  := ⟨
+    λH n => IsEmpty.mk (λ⟨s, Hs⟩  => H.elim ⟨⟨n, s⟩, Hs⟩),
+    λH => IsEmpty.mk (λ⟨⟨n, s⟩, Hs⟩ => (H n).elim ⟨s, Hs⟩)
+  ⟩   

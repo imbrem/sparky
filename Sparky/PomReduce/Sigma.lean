@@ -21,7 +21,9 @@ def SubPomReduces.sigma
     ,
     infinite_preserved := sorry,
     infinite_shared := sorry,
-    empty_shared := sorry
+    empty_shared := λHe =>
+      have He := (SubPom.sigma_empty _).mp He;
+      (SubPom.sigma_empty _).mpr (λn => (H n).empty_shared (He n))
   }
 
 def PomReduces.sigma
