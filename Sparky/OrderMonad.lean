@@ -28,18 +28,18 @@ def ProgramOrders.lift_opt {M: Type} [Monoid M] {A B: Type}  (f: A -> ProgramOrd
 instance (M: Type) [Monoid M]: Monad (ProgramOrders M) := {
   pure := λa => { ⟨ some a, 1 ⟩  },
   map := λf A=> {⟨a.fst.map f, a.snd⟩ | a ∈ A }, 
-  seqLeft := λA B => ⋃ a ∈ A, {⟨
-    a.fst <* b.fst, 
-    a.snd * ((a.fst *> b.snd).getD 1)
-  ⟩ | b ∈ B ()},
-  seqRight := λA B => ⋃ a ∈ A, {⟨
-    a.fst *> b.fst, 
-    a.snd * ((a.fst *> b.snd).getD 1)
-  ⟩ | b ∈ B ()},
-  seq := λA B => ⋃ a ∈ A, {⟨
-    a.fst <*> b.fst, 
-    a.snd * ((a.fst *> b.snd).getD 1)
-  ⟩ | b ∈ B ()},
+  -- seqLeft := λA B => ⋃ a ∈ A, {⟨
+  --   a.fst <* b.fst, 
+  --   a.snd * ((a.fst *> b.snd).getD 1)
+  -- ⟩ | b ∈ B ()},
+  -- seqRight := λA B => ⋃ a ∈ A, {⟨
+  --   a.fst *> b.fst, 
+  --   a.snd * ((a.fst *> b.snd).getD 1)
+  -- ⟩ | b ∈ B ()},
+  -- seq := λA B => ⋃ a ∈ A, {⟨
+  --   a.fst <*> b.fst, 
+  --   a.snd * ((a.fst *> b.snd).getD 1)
+  -- ⟩ | b ∈ B ()},
   bind := λA f => ⋃ a ∈ A, 
     { (b.fst, a.snd * b.snd) | b ∈ ProgramOrders.lift_opt f a.fst }
 }
@@ -66,15 +66,21 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
           cases Hy
           have ⟨⟨y, Ey⟩, Hy, Hy'⟩ := HY
           cases Hy'
-          cases x <;> cases y <;> exact ⟨
+          cases x <;> exact ⟨
             _, 
             ⟨_, rfl⟩, 
             _,
             ⟨⟨_, Hx, rfl⟩, rfl⟩,
             _,
-            Hy,
-            rfl
-          ⟩,
+            by 
+              cases y with
+              | some y => 
+                let ⟨A', ⟨L, HA'⟩, H⟩ := Hy;
+                exact ⟨sorry, sorry⟩
+              | none => cases Hy; rfl
+          ⟩
+          exact sorry
+          exact sorry,
       λ⟨X, ⟨⟨⟨f, Ef⟩, Hf⟩, Hp⟩⟩ => by
         cases Hf
         have ⟨Y, ⟨⟨Hy, HY⟩, Hp⟩⟩ := Hp
@@ -84,15 +90,16 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
         have ⟨⟨y, Ey⟩, Hb', Heb'⟩ := Hp
         have ⟨⟨z, Ez⟩, Hz, Hez⟩ := Hy
         cases Hez
-        cases x <;>
-        cases y <;>
-        cases z <;>
         exact Set.mem_iUnion.mpr ⟨ 
           _,
           Set.mem_iUnion.mpr ⟨
             Hz, 
             Set.mem_setOf.mpr 
-            ⟨_, Hb, rfl⟩
+            ⟨_, 
+              by cases z with
+              | none => exact sorry
+              | some z => sorry
+            , rfl⟩
           ⟩
         ⟩
     ⟩
@@ -111,7 +118,7 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
         _,
         ⟨⟨_, Hx, rfl⟩, rfl⟩,
         _,
-        Hy,
+        sorry,
         rfl
       ⟩
     ,
@@ -132,7 +139,7 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
           Set.mem_iUnion.mpr ⟨
             Hz, 
             Set.mem_setOf.mpr 
-            ⟨_, Hb, rfl⟩
+            ⟨_, sorry, rfl⟩
           ⟩
         ⟩
   ⟩,
@@ -144,15 +151,14 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
       cases Hx'
       have ⟨z, Hz, Hz'⟩ := Hy;
       cases Hz'
-      exact ⟨_, Hz, by simp [Seq.seq, SeqRight.seqRight]⟩,
+      exact sorry,
     λ⟨⟨x, Ex⟩, HA, HX⟩ => by
       cases HX
       exact Set.mem_iUnion.mpr ⟨ 
           _,
           Set.mem_iUnion.mpr ⟨
             rfl, 
-            Set.mem_setOf.mpr 
-            ⟨_, HA, by simp [Seq.seq, SeqRight.seqRight]⟩
+            Set.mem_setOf.mpr sorry
           ⟩
         ⟩
   ⟩,
@@ -173,8 +179,22 @@ instance (M: Type) [Monoid M]: LawfulMonad (ProgramOrders M) := {
         by cases x <;> exact ⟨_, rfl, by simp⟩
       ⟩ 
   ⟩,
-  bind_map := λf A => Set.ext λ⟨p, Ep⟩ => ⟨
-    sorry,
+  bind_map := λF A => Set.ext λ⟨p, Ep⟩ => ⟨
+    λ⟨X, ⟨⟨f, Ef⟩, HeX⟩, HX⟩ => by
+      cases HeX
+      have ⟨Y, ⟨Hf, HeY⟩, HY⟩ := HX
+      cases HeY
+      have ⟨⟨z, Ez⟩, Hz, Hez⟩ := HY
+      cases Hez
+      exact ⟨_, ⟨⟨f, Ef⟩, rfl⟩, _, ⟨Hf, rfl⟩, 
+        by cases f with
+        | none => cases Hz; exact sorry
+        | some f => cases Hz with | intro w H => 
+          have ⟨Hw, Hwe⟩ := H;
+          cases Hwe
+          exact sorry
+      ⟩
+    ,
     sorry
   ⟩,
   pure_bind := λa f => Set.ext λ⟨p, Ep⟩ => ⟨
