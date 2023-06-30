@@ -4,6 +4,14 @@ import Sparky.SubPom
 class Ticked (L: Type) :=
   δ: L
 
+def Pom.tick (L: Type) [Ticked L]: Pom L := {
+  carrier := Unit,
+  order := {
+    le_antisymm := λa b _ _ => by cases a; cases b; rfl
+  },
+  action := λ_ => Ticked.δ
+}
+
 structure SubPomReduces {L} [Ticked L] {α: Pom L} (ρ σ: SubPom α): Prop :=
   subset: σ.contains ⊆ ρ.contains
   infinite_or_tick: ∀p: ρ.contains,

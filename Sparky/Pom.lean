@@ -10,6 +10,17 @@ instance {L}: CoeOut (Pom L) (Type) := {
   coe := Pom.carrier
 }
 
+def Pom.empty (L: Type): Pom L := {
+  carrier := Empty,
+  order := {
+    le := λ_ _ => True,
+    le_refl := (λa => match a with .),
+    le_trans := (λa => match a with .),
+    le_antisymm := (λa => match a with .)
+  },
+  action := λe => match e with.
+}
+
 def Pom.sigma {L} {N: Type} [PartialOrder N] (F: N -> Pom L): Pom L := {
   carrier := Lex (Sigma (λn => (F n).carrier)),
   order := @Sigma.Lex.partialOrder _ _ _ (λn => (F n).order),

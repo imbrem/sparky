@@ -136,4 +136,6 @@ def PomIso.par_elim {L} {N M} [PartialOrder N] [PartialOrder M] (α: N -> Pom L)
   : PomIso ((Pom.sigma α).par (Pom.sigma β)) (Pom.sigma (Sum.elim α β))
   := sorry
 
-def PomIso.par2 {L} (α: Unit ⊕ Unit -> Pom L): PomIso (Pom.sigma α) ((α (Sum.inl ())).par (α (Sum.inr ()))) := sorry
+def PomIso.par2 {L} (α: Unit ⊕ Unit -> Pom L)
+  : PomIso (Pom.sigma α) ((α (Sum.inl ())).par (α (Sum.inr ()))) 
+  := sorry
