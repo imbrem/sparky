@@ -28,3 +28,4 @@ def Pom' (L) [Ticked L] := Quotient (Pom.isSetoid L)
 
 def Pom'.empty (L) [Ticked L]: Pom' L := Quotient.mk _ (Pom.empty L)
 def Pom'.tick (L) [Ticked L]: Pom' L := Quotient.mk _ (Pom.tick L)
+--def Pom'.empty_left_unit_seq {L} [Ticked L] (α: Pom' L)

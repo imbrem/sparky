@@ -139,3 +139,33 @@ def PomIso.par_elim {L} {N M} [PartialOrder N] [PartialOrder M] (α: N -> Pom L)
 def PomIso.par2 {L} (α: Unit ⊕ Unit -> Pom L)
   : PomIso (Pom.sigma α) ((α (Sum.inl ())).par (α (Sum.inr ()))) 
   := sorry
+
+def PomIso.empty_left_unit_seq {L} (α: Pom L)
+  : PomIso ((Pom.empty L).seq α) α
+  := {
+    toFun := λa => match a with | Sum.inr a => a
+    invFun := Sum.inr,
+    left_inv := λa => match a with | Sum.inr _ => rfl,
+    right_inv := λ_ => rfl,
+    map_rel_iff' := λ{a b} => match a, b with 
+      | Sum.inr _, Sum.inr _ => ⟨
+        Sum.Lex.inr,
+        λH => match H with | Sum.Lex.inr H => H
+      ⟩,
+    action_eq := λ{a} => match a with | Sum.inr _ => rfl
+  }
+
+def PomIso.empty_right_unit_seq {L} (α: Pom L)
+  : PomIso (α.seq (Pom.empty L)) α
+  := {
+    toFun := λa => match a with | Sum.inl a => a
+    invFun := Sum.inl,
+    left_inv := λa => match a with | Sum.inl _ => rfl,
+    right_inv := λ_ => rfl,
+    map_rel_iff' := λ{a b} => match a, b with 
+      | Sum.inl _, Sum.inl _ => ⟨
+        Sum.Lex.inl,
+        λH => match H with | Sum.Lex.inl H => H
+      ⟩,
+    action_eq := λ{a} => match a with | Sum.inl _ => rfl
+  }

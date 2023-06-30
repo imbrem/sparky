@@ -18,6 +18,28 @@ def PomEquiv.refl {L} [Ticked L] (α: Pom L): PomEquiv α α := {
   iso_right := SubPom.iso_univ α
 }
 
+def PomEquiv.fromLeftIso {L} [Ticked L] {α β: Pom L} (I: PomIso α β)
+: PomEquiv α β := {
+  shared := β,
+  reduce_left := PomReduct.univ β,
+  reduce_right := PomReduct.univ β,
+  iso_left := PomIso.trans (SubPom.iso_univ β) I.symm,
+  iso_right := (SubPom.iso_univ β)
+}
+
+def PomEquiv.fromRightIso {L} [Ticked L] {α β: Pom L} (I: PomIso α β)
+: PomEquiv α β := {
+  shared := α,
+  reduce_left := PomReduct.univ α,
+  reduce_right := PomReduct.univ α,
+  iso_left := (SubPom.iso_univ α),
+  iso_right := PomIso.trans (SubPom.iso_univ α) I
+}
+
+instance {L} [Ticked L] {α β: Pom L}: Coe (PomIso α β) (PomEquiv α β) := {
+  coe := PomEquiv.fromRightIso
+}
+
 def PomEquiv.symm {L} [Ticked L] {α β: Pom L} (P: PomEquiv α β): PomEquiv β α := {
   shared := P.shared,
   reduce_left := P.reduce_right,
@@ -164,3 +186,11 @@ def PomEquiv.right_shared_pred' {L} [Ticked L] {α β: Pom L}
   := by
     rw [P.right_shared_pred]
     rfl
+
+def PomEquiv.empty_left_unit_seq {L} [Ticked L] (α: Pom L)
+  : PomEquiv ((Pom.empty L).seq α) α
+  := PomIso.empty_left_unit_seq α
+
+def PomEquiv.empty_right_unit_seq {L} [Ticked L] (α: Pom L)
+  : PomEquiv (α.seq (Pom.empty L)) α
+  := PomIso.empty_right_unit_seq α
