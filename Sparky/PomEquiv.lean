@@ -26,6 +26,16 @@ instance Pom.isSetoid (L) [Ticked L] : Setoid (Pom L) := {
 
 def Pom' (L) [Ticked L] := Quotient (Pom.isSetoid L)
 
-def Pom'.empty (L) [Ticked L]: Pom' L := Quotient.mk _ (Pom.empty L)
-def Pom'.tick (L) [Ticked L]: Pom' L := Quotient.mk _ (Pom.tick L)
+def Pom.toEquiv {L} [Ticked L]: Pom L -> Pom' L := Quotient.mk _
+def Pom'.empty (L) [Ticked L]: Pom' L := (Pom.empty L).toEquiv
+def Pom'.tick (L) [Ticked L]: Pom' L := (Pom.tick L).toEquiv
+
+def Pom'.seq {L} [Ticked L]: Pom' L -> Pom' L -> Pom' L 
+  := Quotient.lift₂ 
+    (λα β => (α.seq β).toEquiv) 
+    (λ_ _ _ _ Hα Hβ => 
+      let ⟨Hα⟩ := Hα;
+      let ⟨Hβ⟩ := Hβ;
+      Quotient.sound (Nonempty.intro (Hα.seq Hβ))     
+    )
 --def Pom'.empty_left_unit_seq {L} [Ticked L] (α: Pom' L)
