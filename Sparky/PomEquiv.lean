@@ -52,14 +52,14 @@ instance PomFamily.isSetoid (N) [PartialOrder N] (L) [Ticked L] : Setoid (PomFam
 }
 
 def Pom' (L) [Ticked L] := Quotient (Pom.isSetoid L)
-def Pom.toEquiv {L} [Ticked L]: Pom L -> Pom' L := Quotient.mk _
+def Pom.toPom' {L} [Ticked L]: Pom L -> Pom' L := Quotient.mk _
 
-def Pom'.empty (L) [Ticked L]: Pom' L := (Pom.empty L).toEquiv
-def Pom'.tick (L) [Ticked L]: Pom' L := (Pom.tick L).toEquiv
+def Pom'.empty (L) [Ticked L]: Pom' L := (Pom.empty L).toPom'
+def Pom'.tick (L) [Ticked L]: Pom' L := (Pom.tick L).toPom'
 
 def Pom'.seq {L} [Ticked L]: Pom' L -> Pom' L -> Pom' L 
   := Quotient.lift₂ 
-    (λα β => (α.seq β).toEquiv) 
+    (λα β => (α.seq β).toPom') 
     (λ_ _ _ _ Hα Hβ => 
       let ⟨Hα⟩ := Hα;
       let ⟨Hβ⟩ := Hβ;
@@ -67,7 +67,7 @@ def Pom'.seq {L} [Ticked L]: Pom' L -> Pom' L -> Pom' L
     )
 def Pom'.par {L} [Ticked L]: Pom' L -> Pom' L -> Pom' L 
   := Quotient.lift₂ 
-    (λα β => (α.par β).toEquiv) 
+    (λα β => (α.par β).toPom') 
     (λ_ _ _ _ Hα Hβ => 
       let ⟨Hα⟩ := Hα;
       let ⟨Hβ⟩ := Hβ;
@@ -109,12 +109,15 @@ instance {L} [Ticked L]: AddMonoid (Pom' L) := {
 def PomFamily' (N) [PartialOrder N] (L) [Ticked L] := Quotient (PomFamily.isSetoid N L)
 def PomFamily'.mk {N} [PartialOrder N] {L} [Ticked L]: PomFamily N L -> PomFamily' N L 
   := Quotient.mk _
+def PomFamily'.app {N} [PartialOrder N] {L} [Ticked L]: PomFamily' N L -> N -> Pom' L
+  := Quotient.lift (λF n => (F n).toPom') (λ_ _ E => 
+    let ⟨E⟩ := E; funext (λn => Quotient.sound (Nonempty.intro (E n))))
 
-def PomFamily.toEquiv {N} [PartialOrder N] {L} [Ticked L]
+def PomFamily.toPomFamily' {N} [PartialOrder N] {L} [Ticked L]
   : PomFamily N L -> PomFamily' N L 
   := Quotient.mk _
 def PomFamily.toPom' {N} [PartialOrder N] {L} [Ticked L] (F: PomFamily N L): Pom' L
-  := F.toPom.toEquiv
+  := F.toPom.toPom'
 def PomFamily'.toPom' {N} [PartialOrder N] {L} [Ticked L]: PomFamily' N L -> Pom' L
   := Quotient.lift PomFamily.toPom' 
     (λ_ _ H => 
