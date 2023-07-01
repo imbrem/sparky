@@ -21,7 +21,13 @@ def Pom.empty (L: Type): Pom L := {
   action := λe => match e with.
 }
 
-def PomFamily (N: Type) [PartialOrder N] (L) := N -> Pom L
+def PomFamily (N: Type) (L) := N -> Pom L
+def PomFamily.mk {L} {N}: (N -> Pom L) -> PomFamily N L := id
+
+def PomFamily.map_index {L N M} (F: PomFamily N L) (f: M -> N): PomFamily M L
+  := λm => F (f m)
+def PomFamily.succ {L} (F: PomFamily ℕ L): PomFamily ℕ L 
+  := F.map_index Nat.succ
 
 def Pom.sigma {L} {N: Type} [PartialOrder N] (F: PomFamily N L): Pom L := {
   carrier := Lex (Sigma (λn => (F n).carrier)),

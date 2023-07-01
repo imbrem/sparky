@@ -170,8 +170,8 @@ def PomIso.empty_right_unit_seq {L} (α: Pom L)
     action_eq := λ{a} => match a with | Sum.inl _ => rfl
   }
 
-def PomIso.nat_sigma {L} (F: PomFamily ℕ L)
-  : PomIso F.toPom ((F 0).seq (Pom.sigma (λn => F (n + 1))))
+def PomIso.succ_sigma {L} (F: PomFamily ℕ L)
+  : PomIso F.toPom ((F 0).seq F.succ.toPom)
   := {
     toFun := λa => 
       match a with | ⟨0, a⟩ => Sum.inl a | ⟨n + 1, a⟩ => Sum.inr ⟨n, a⟩,

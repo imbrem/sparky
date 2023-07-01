@@ -24,29 +24,29 @@ instance Pom.isSetoid (L) [Ticked L] : Setoid (Pom L) := {
   iseqv := PomEquivP.iseqv
 }
 
-def PomFamilyEquivP {N} [PartialOrder N] {L} [Ticked L] (F G: PomFamily N L): Prop 
+def PomFamilyEquivP {N} {L} [Ticked L] (F G: PomFamily N L): Prop 
   := Nonempty (PomFamilyEquiv F G)
 
-def PomFamilyEquivP.refl {N} [PartialOrder N] {L} [Ticked L] (F: PomFamily N L): PomFamilyEquivP F F 
+def PomFamilyEquivP.refl {N} {L} [Ticked L] (F: PomFamily N L): PomFamilyEquivP F F 
   := Nonempty.intro (PomFamilyEquiv.refl F)
 
-def PomFamilyEquivP.symm {N} [PartialOrder N] {L} [Ticked L] 
+def PomFamilyEquivP.symm {N} {L} [Ticked L] 
   {F G: PomFamily N L} (E: PomFamilyEquivP F G): PomFamilyEquivP G F
   := let ⟨E⟩ := E; Nonempty.intro E.symm
 
-def PomFamilyEquivP.trans {N} [PartialOrder N] {L} [Ticked L] 
+def PomFamilyEquivP.trans {N} {L} [Ticked L] 
   {F G H: PomFamily N L} (E: PomFamilyEquivP F G) (E': PomFamilyEquivP G H)
   : PomFamilyEquivP F H 
   := let ⟨E⟩ := E; let ⟨E'⟩ := E'; Nonempty.intro (PomFamilyEquiv.trans E E')
 
-def PomFamilyEquivP.iseqv {N} [HN: PartialOrder N] {L} [HL: Ticked L]
-  : Equivalence (@PomFamilyEquivP N HN L HL) := {
+def PomFamilyEquivP.iseqv {N} {L} [HL: Ticked L]
+  : Equivalence (@PomFamilyEquivP N L HL) := {
   refl := refl,
   symm := symm,
   trans := trans
 }
 
-instance PomFamily.isSetoid (N) [PartialOrder N] (L) [Ticked L] : Setoid (PomFamily N L) := {
+instance PomFamily.isSetoid (N) (L) [Ticked L] : Setoid (PomFamily N L) := {
   r := PomFamilyEquivP,
   iseqv := PomFamilyEquivP.iseqv
 }
@@ -65,6 +65,10 @@ def Pom'.seq {L} [Ticked L]: Pom' L -> Pom' L -> Pom' L
       let ⟨Hβ⟩ := Hβ;
       Quotient.sound (Nonempty.intro (Hα.seq Hβ))     
     )
+def Pom'.seq_mk {L} [Ticked L] (α β: Pom L):
+  (α.seq β).toPom' = α.toPom'.seq β.toPom' 
+  := sorry
+
 def Pom'.par {L} [Ticked L]: Pom' L -> Pom' L -> Pom' L 
   := Quotient.lift₂ 
     (λα β => (α.par β).toPom') 
@@ -106,19 +110,42 @@ instance {L} [Ticked L]: AddMonoid (Pom' L) := {
   add_zero := Pom'.empty_par
 }
 
-def PomFamily' (N) [PartialOrder N] (L) [Ticked L] := Quotient (PomFamily.isSetoid N L)
-def PomFamily'.mk {N} [PartialOrder N] {L} [Ticked L]: PomFamily N L -> PomFamily' N L 
+def PomFamily' (N) (L) [Ticked L] := Quotient (PomFamily.isSetoid N L)
+def PomFamily'.mk {N} {L} [Ticked L]: PomFamily N L -> PomFamily' N L 
   := Quotient.mk _
-def PomFamily'.app {N} [PartialOrder N] {L} [Ticked L]: PomFamily' N L -> N -> Pom' L
+def PomFamily'.app {N} {L} [Ticked L]: PomFamily' N L -> N -> Pom' L
   := Quotient.lift (λF n => (F n).toPom') (λ_ _ E => 
     let ⟨E⟩ := E; funext (λn => Quotient.sound (Nonempty.intro (E n))))
 
-def PomFamily.toPomFamily' {N} [PartialOrder N] {L} [Ticked L]
+abbrev PomFamily.toPomFamily' {N} {L} [Ticked L]
   : PomFamily N L -> PomFamily' N L 
   := Quotient.mk _
-def PomFamily.toPom' {N} [PartialOrder N] {L} [Ticked L] (F: PomFamily N L): Pom' L
+def PomFamily'.mk_app {N} {L} [Ticked L] (F: PomFamily N L) (n: N)
+  : F.toPomFamily'.app n = (F n).toPom'
+  := sorry
+abbrev PomFamily.toPom' {N} [PartialOrder N] {L} [Ticked L] (F: PomFamily N L): Pom' L
   := F.toPom.toPom'
-def PomFamily'.toPom' {N} [PartialOrder N] {L} [Ticked L]: PomFamily' N L -> Pom' L
+abbrev PomFamily'.toPom' {N} [PartialOrder N] {L} [Ticked L]: PomFamily' N L -> Pom' L
   := Quotient.lift PomFamily.toPom' 
-    (λ_ _ H => 
-      let ⟨H⟩ := H; Quotient.sound (Nonempty.intro H.toPomEquiv))
+    (λ_ _ H => let ⟨H⟩ := H; Quotient.sound (Nonempty.intro H.toPomEquiv))
+theorem PomFamily'.mk_toPom' {N} [PartialOrder N] {L} [Ticked L] (F: PomFamily N L)
+  : F.toPomFamily'.toPom' = F.toPom'
+  := sorry
+
+def PomFamily'.map_index {L} [Ticked L] {N M} 
+  : PomFamily' N L -> (M -> N) -> PomFamily' M L
+  := Quotient.lift 
+    (λF f => Quotient.mk _ (F.map_index f)) 
+    (λ_ _ E => let ⟨E⟩ := E; funext (λf => Quotient.sound (Nonempty.intro (λm => E (f m)))))
+def PomFamily'.mk_map_index {L} [Ticked L] {N M} (F: PomFamily N L) (f: M -> N)
+  : F.toPomFamily'.map_index f = (F.map_index f).toPomFamily'
+  := sorry
+abbrev PomFamily'.succ {L} [Ticked L] (F: PomFamily' ℕ L): PomFamily' ℕ L
+  := F.map_index Nat.succ
+def PomFamily'.succ_sigma {L} [Ticked L] (F: PomFamily' ℕ L)
+  : F.toPom' = (F.app 0).seq F.succ.toPom'
+  := Quotient.inductionOn F 
+    (λF => by
+      rw [mk_app, mk_toPom', succ, mk_map_index, mk_toPom', <-Pom'.seq_mk]
+      exact Quotient.sound (Nonempty.intro (PomEquiv.fromRightIso (PomIso.succ_sigma F)))
+    )

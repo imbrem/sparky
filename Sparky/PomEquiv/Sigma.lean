@@ -1,22 +1,22 @@
 import Sparky.PomEquiv.Basic
 import Sparky.PomEquiv.Trans
 
-def PomFamilyEquiv {L} [Ticked L] {N} [PartialOrder N]
+def PomFamilyEquiv {L} [Ticked L] {N}
   (F: PomFamily N L) (G: PomFamily N L)
   := ∀(n: N), PomEquiv (F n) (G n)
 
-def PomFamilyEquiv.refl {L} [Ticked L] {N} [PartialOrder N]
+def PomFamilyEquiv.refl {L} [Ticked L] {N}
   (F: PomFamily N L)
   : PomFamilyEquiv F F
   := λn => PomEquiv.refl (F n)
 
-def PomFamilyEquiv.symm {L} [Ticked L] {N} [PartialOrder N]
+def PomFamilyEquiv.symm {L} [Ticked L] {N}
   {F G: PomFamily N L}
   (E: PomFamilyEquiv F G)
   : PomFamilyEquiv G F
   := λn => (E n).symm
 
-noncomputable def PomFamilyEquiv.trans {L} [Ticked L] {N} [PartialOrder N]
+noncomputable def PomFamilyEquiv.trans {L} [Ticked L] {N}
   {F G H: PomFamily N L}
   (E: PomFamilyEquiv F G)
   (E': PomFamilyEquiv G H)
