@@ -169,3 +169,43 @@ def PomIso.empty_right_unit_seq {L} (α: Pom L)
       ⟩,
     action_eq := λ{a} => match a with | Sum.inl _ => rfl
   }
+
+def PomIso.nat_sigma {L} (F: PomFamily ℕ L)
+  : PomIso F.toPom ((F 0).seq (Pom.sigma (λn => F (n + 1))))
+  := {
+    toFun := λa => 
+      match a with | ⟨0, a⟩ => Sum.inl a | ⟨n + 1, a⟩ => Sum.inr ⟨n, a⟩,
+    invFun := λa => 
+      match a with | Sum.inl a => ⟨0, a⟩ | Sum.inr ⟨n, a⟩ => ⟨n + 1, a⟩,
+    left_inv := λa => 
+      match a with | ⟨0, _⟩ => rfl | ⟨_ + 1, _⟩ => rfl,
+    right_inv := λa => 
+      match a with | Sum.inl _ => rfl | Sum.inr ⟨_, _⟩ => rfl,
+    map_rel_iff' := λ{a b} =>
+      match a, b with
+      | ⟨0, _⟩, ⟨0, _⟩ => ⟨
+        λH => match H with | Sum.Lex.inl H => Sigma.Lex.right _ _ H,
+        λH => match H with | Sigma.Lex.right _ _ H => Sum.Lex.inl H
+      ⟩  
+      | ⟨0, _⟩, ⟨_ + 1, _⟩ => ⟨
+        λ_ => Sigma.Lex.left _ _ (by simp),
+        λ_ => Sum.Lex.sep _ _
+      ⟩  
+      | ⟨_ + 1, _⟩, ⟨0, _⟩ => ⟨
+        λH => match H with.,
+        λH => match H with. 
+      ⟩ 
+      | ⟨_ + 1, w⟩, ⟨_ + 1, z⟩ => ⟨
+        λH => match H with 
+          | Sum.Lex.inr H => by
+            cases H with
+            | left _ _ H => exact Sigma.Lex.left _ _ (Nat.succ_le_succ H)
+            | right x y H => cases H; exact Sigma.Lex.right _ _ H,
+        λH => Sum.Lex.inr (by
+          cases H with
+          | left _ _ H => exact Sigma.Lex.left _ _ (Nat.le_of_succ_le_succ H)
+          | right _ _ H => exact Sigma.Lex.right _ _ H)
+      ⟩    
+    action_eq := λ{a} =>
+      match a with | ⟨0, _⟩ => rfl | ⟨_ + 1, _⟩ => rfl
+  }
