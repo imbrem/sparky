@@ -116,6 +116,10 @@ def PomFamily'.mk {N} {L} [Ticked L]: PomFamily N L -> PomFamily' N L
 def PomFamily'.app {N} {L} [Ticked L]: PomFamily' N L -> N -> Pom' L
   := Quotient.lift (λF n => (F n).toPom') (λ_ _ E => 
     let ⟨E⟩ := E; funext (λn => Quotient.sound (Nonempty.intro (E n))))
+noncomputable def PomFamily'.fromPom' {L} [Ticked L] {N} [PartialOrder N]
+  (F: N -> Pom' L)
+  : PomFamily' N L
+  := Quotient.mk _ (Quotient.out ∘ F)
 
 abbrev PomFamily.toPomFamily' {N} {L} [Ticked L]
   : PomFamily N L -> PomFamily' N L 
