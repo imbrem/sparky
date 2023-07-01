@@ -1,11 +1,34 @@
 import Sparky.PomEquiv.Basic
+import Sparky.PomEquiv.Trans
+
+def PomFamilyEquiv {L} [Ticked L] {N} [PartialOrder N]
+  (F: PomFamily N L) (G: PomFamily N L)
+  := ∀(n: N), PomEquiv (F n) (G n)
+
+def PomFamilyEquiv.refl {L} [Ticked L] {N} [PartialOrder N]
+  (F: PomFamily N L)
+  : PomFamilyEquiv F F
+  := λn => PomEquiv.refl (F n)
+
+def PomFamilyEquiv.symm {L} [Ticked L] {N} [PartialOrder N]
+  {F G: PomFamily N L}
+  (E: PomFamilyEquiv F G)
+  : PomFamilyEquiv G F
+  := λn => (E n).symm
+
+noncomputable def PomFamilyEquiv.trans {L} [Ticked L] {N} [PartialOrder N]
+  {F G H: PomFamily N L}
+  (E: PomFamilyEquiv F G)
+  (E': PomFamilyEquiv G H)
+  : PomFamilyEquiv F H
+  := λn => (E n).trans (E' n)
 
 def PomEquiv.sigma
   {L} [Ticked L]
   {N} [PartialOrder N]
-  (F: N -> Pom L)
-  (G: N -> Pom L)
-  (E: ∀(n: N), PomEquiv (F n) (G n))
+  (F: PomFamily N L)
+  (G: PomFamily N L)
+  (E: PomFamilyEquiv F G)
   : PomEquiv (Pom.sigma F) (Pom.sigma G)
   := {
     shared := Pom.sigma (λn => (E n).shared),
