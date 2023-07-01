@@ -42,6 +42,14 @@ def PomEquiv.sigma
       (PomIso.sigma (λn => (E n).iso_right))
   }
 
+def PomFamilyEquiv.toPomEquiv
+  {L} [Ticked L]
+  {N} [PartialOrder N]
+  {F: PomFamily N L} {G: PomFamily N L}
+  (E: PomFamilyEquiv F G)
+  : PomEquiv (F.toPom) (G.toPom)
+  := PomEquiv.sigma F G E
+
 def PomEquiv.seq
   {L} [Ticked L]
   {α α': Pom L}

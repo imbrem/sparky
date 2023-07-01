@@ -106,10 +106,16 @@ instance {L} [Ticked L]: AddMonoid (Pom' L) := {
   add_zero := Pom'.empty_par
 }
 
-def Pom'.sigma {L} [Ticked L] {N} [PartialOrder N] (F: N -> Pom' L): Pom' L
-  := sorry
-
 def PomFamily' (N) [PartialOrder N] (L) [Ticked L] := Quotient (PomFamily.isSetoid N L)
+def PomFamily'.mk {N} [PartialOrder N] {L} [Ticked L]: PomFamily N L -> PomFamily' N L 
+  := Quotient.mk _
+
 def PomFamily.toEquiv {N} [PartialOrder N] {L} [Ticked L]
   : PomFamily N L -> PomFamily' N L 
   := Quotient.mk _
+def PomFamily.toPom' {N} [PartialOrder N] {L} [Ticked L] (F: PomFamily N L): Pom' L
+  := F.toPom.toEquiv
+def PomFamily'.toPom' {N} [PartialOrder N] {L} [Ticked L]: PomFamily' N L -> Pom' L
+  := Quotient.lift PomFamily.toPom' 
+    (λ_ _ H => 
+      let ⟨H⟩ := H; Quotient.sound (Nonempty.intro H.toPomEquiv))
